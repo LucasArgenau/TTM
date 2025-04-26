@@ -1,0 +1,53 @@
+@model TorneioTenisMesa.Models.ViewModels.CreateTournamentViewModel
+
+@{
+    ViewData["Title"] = "Criar Torneio";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card p-4 mt-3">
+    <form asp-action="CreateTournament" method="post">
+        <div class="form-group">
+            <label asp-for="Name"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="StartDate"></label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EndDate"></label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ImportBatchId">Importação de Jogadores</label>
+
+            @if (!Model.ImportBatchOptions.Any())
+            {
+                <div class="alert alert-warning">
+                    Nenhuma importação de jogadores foi encontrada. Importe jogadores antes de criar um torneio.
+                </div>
+            }
+
+            <select asp-for="ImportBatchId" asp-items="Model.ImportBatchOptions" class="form-control" disabled="@(!Model.ImportBatchOptions.Any())">
+                <option value="">-- Selecione uma Importação --</option>
+            </select>
+
+            <span asp-validation-for="ImportBatchId" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success" @(Model.ImportBatchOptions.Any() ? "" : "disabled")>Criar Torneio e Gerar Jogos</button>
+        <a asp-action="ManageTournaments" class="btn btn-secondary ml-2">Cancelar</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

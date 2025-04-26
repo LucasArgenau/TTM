@@ -1,0 +1,30 @@
+@model TorneioTenisMesa.Models.Player
+
+@{
+    ViewData["Title"] = "Jogador - Dashboard";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h3>Bem-vindo, @User.Identity!.Name!</h3>
+    <p>Aqui você pode visualizar seu perfil, ver os resultados das partidas e consultar o ranking atual.</p>
+
+    <div class="mb-3">
+        <!-- Link para visualizar o perfil do jogador -->
+        <a href="@Url.Action("Profile", "Player")" class="btn btn-primary">Ver Meu Perfil</a>
+        
+        <!-- Link para visualizar os resultados das partidas -->
+        <a href="@Url.Action("Results", "Player")" class="btn btn-secondary">Ver Resultados das Partidas</a>
+        
+        <!-- Link para consultar o ranking -->
+        <a href="@Url.Action("Ranking", "Player")" class="btn btn-success">Ver Ranking</a>
+    </div>
+
+    <div>
+        <h4>Informações do Torneio</h4>
+        <p>Aqui você pode acompanhar os detalhes do torneio atual em que está participando.</p>
+        <!-- Link para ver os detalhes do torneio -->
+        <a href="@Url.Action("TournamentDetails", "Player")" class="btn btn-warning">Ver Detalhes do Torneio Atual</a>
+    </div>
+</div>

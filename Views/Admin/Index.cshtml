@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Admin - Dashboard";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h3>Bem-vindo, Administrador!</h3>
+    <p>Aqui você pode gerenciar torneios, jogadores e importar jogadores via CSV.</p>
+
+    <!-- Link para importar jogadores via CSV -->
+    <div class="mb-3">
+        <a href="@Url.Action("ImportCsv", "Admin")" class="btn btn-primary">Importar Jogadores via CSV</a>
+    </div>
+    
+    <!-- Link para gerenciar jogadores -->
+    <div class="mb-3">
+        <a href="@Url.Action("ManagePlayers", "Admin")" class="btn btn-secondary">Gerenciar Jogadores</a>
+    </div>
+
+    <!-- Link para ver detalhes do torneio atual -->
+    <div class="mb-3">
+        <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-success">visualizar Torneios</a>
+    </div>
+
+    <div>
+        <h4>Torneios</h4>
+        <p>Aqui você pode visualizar e criar novos torneios.</p>
+        <!-- Link para criar um novo torneio -->
+        <a href="@Url.Action("CreateTournament", "Admin")" class="btn btn-warning">Criar Novo Torneio</a>
+    </div>
+
+    <div>
+        <h4>Adicionar Resultados aos Jogos</h4>
+        <p>Adicione os resultados as partidas dos torneios.</aside></p>
+        <!-- Link para visualizar os resultados -->
+        <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-info">Adicionar Resultados</a>
+    </div>
+
+    <div>
+        <h4>Exportar Resultados</h4>
+        <p>Aqui você pode exportar os resultados do torneio para um arquivo CSV.</p>
+        <!-- Link para exportar resultados do torneio -->
+        <a href="@Url.Action("ExportGames", "Admin")" class="btn btn-success">Exportar Resultados para CSV</a>
+    </div>
+</div>

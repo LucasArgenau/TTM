@@ -1,0 +1,38 @@
+@model List<TorneioTenisMesa.Models.ViewModels.GameResultViewModel>
+
+@{
+    ViewData["Title"] = "Resultados";
+}
+
+<h2>Resultados das Partidas</h2>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Adversário</th>
+                <th>Meu Placar</th>
+                <th>Placar Adversário</th>
+                <th>Grupo</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var result in Model)
+            {
+                <tr>
+                    <td>@result.Player2Name</td> <!-- Exibindo o nome do adversário -->
+                    <td>@result.ScorePlayer1</td> <!-- Exibindo o placar do jogador 1 -->
+                    <td>@result.ScorePlayer2</td> <!-- Exibindo o placar do jogador 2 -->
+                    <td>@result.Group</td> <!-- Exibindo o grupo -->
+                    <td>@result.Date.ToString("dd/MM/yyyy")</td> <!-- Exibindo a data -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Nenhuma partida registrada até o momento.</p>
+}

@@ -1,0 +1,39 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f1f8ff;
+}
+
+.navbar {
+  background-color: #003366;
+}
+
+.navbar-brand {
+  color: white !important;
+}
+
+.navbar-nav .nav-link {
+  color: white !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #0066cc !important;
+}
+
+footer {
+  background-color: #003366;
+  color: white;
+}
+
+h1, p {
+  color: #003366;
+}
+
+.btn-primary {
+  background-color: #0066cc;
+  border-color: #003366;
+}
+
+.btn-primary:hover {
+  background-color: #004080;
+  border-color: #003366;
+}

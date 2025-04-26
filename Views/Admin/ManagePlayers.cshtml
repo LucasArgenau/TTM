@@ -1,0 +1,38 @@
+@model List<TorneioTenisMesa.Models.Player>
+
+@{
+    ViewData["Title"] = "Gerenciar Jogadores";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="mb-3">
+    <a href="@Url.Action("ImportCsv", "Admin")" class="btn btn-primary">Importar Jogadores via CSV</a>
+</div>
+
+<h3>Jogadores</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Rating</th>
+            <th>Grupo</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var player in Model)
+        {
+            <tr>
+                <td>@player.Name</td>
+                <td>@player.Rating</td>
+                <td>@player.Group</td>
+                <td>
+                    <a href="@Url.Action("EditPlayer", "Admin", new { id = player.Id })" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="@Url.Action("DeletePlayer", "Admin", new { id = player.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza de que deseja excluir este jogador?');">Excluir</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
