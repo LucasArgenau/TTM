@@ -2,45 +2,80 @@
     ViewData["Title"] = "Admin - Dashboard";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="card-title text-primary mb-4">@ViewData["Title"]</h2>
 
-<div>
-    <h3>Bem-vindo, Administrador!</h3>
-    <p>Aqui você pode gerenciar torneios, jogadores e importar jogadores via CSV.</p>
+        <div class="bg-light p-4 rounded mb-4 border-start border-primary border-4">
+            <h3 class="text-primary">Bem-vindo, Administrador!</h3>
+            <p class="lead">Aqui você pode gerenciar torneios, jogadores e importar jogadores via CSV.</p>
 
-    <!-- Link para importar jogadores via CSV -->
-    <div class="mb-3">
-        <a href="@Url.Action("ImportCsv", "Admin")" class="btn btn-primary">Importar Jogadores via CSV</a>
-    </div>
-    
-    <!-- Link para gerenciar jogadores -->
-    <div class="mb-3">
-        <a href="@Url.Action("ManagePlayers", "Admin")" class="btn btn-secondary">Gerenciar Jogadores</a>
-    </div>
+            <div class="row g-3 mt-3">
+                <!-- Link para importar jogadores via CSV -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="@Url.Action("ImportCsv", "Admin")" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-file-earmark-arrow-up"></i> Importar Jogadores via CSV
+                    </a>
+                </div>
+                
+                <!-- Link para gerenciar jogadores -->
+                <div class="col-md-4 col-sm-6">
+                    <a href="@Url.Action("ManagePlayers", "Admin")" class="btn btn-secondary w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-people"></i> Gerenciar Jogadores
+                    </a>
+                </div>
 
-    <!-- Link para ver detalhes do torneio atual -->
-    <div class="mb-3">
-        <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-success">visualizar Torneios</a>
-    </div>
+                <!-- Link para ver detalhes do torneio atual -->
+                <div class="col-md-4 col-sm-12">
+                    <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-trophy"></i> Visualizar Torneios
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <div>
-        <h4>Torneios</h4>
-        <p>Aqui você pode visualizar e criar novos torneios.</p>
-        <!-- Link para criar um novo torneio -->
-        <a href="@Url.Action("CreateTournament", "Admin")" class="btn btn-warning">Criar Novo Torneio</a>
-    </div>
+        <div class="row g-4">
+            <!-- Card de Torneios -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-2 text-primary">Torneios</h4>
+                        <p class="card-text">Aqui você pode visualizar e criar novos torneios.</p>
+                        <!-- Link para criar um novo torneio -->
+                        <a href="@Url.Action("CreateTournament", "Admin")" class="btn btn-warning w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-plus-circle"></i> Criar Novo Torneio
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-    <div>
-        <h4>Adicionar Resultados aos Jogos</h4>
-        <p>Adicione os resultados as partidas dos torneios.</aside></p>
-        <!-- Link para visualizar os resultados -->
-        <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-info">Adicionar Resultados</a>
-    </div>
+            <!-- Card de Adicionar Resultados -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-2 text-primary">Adicionar Resultados aos Jogos</h4>
+                        <p class="card-text">Adicione os resultados as partidas dos torneios.</p>
+                        <!-- Link para visualizar os resultados -->
+                        <a href="@Url.Action("ChooseTournament", "Admin")" class="btn btn-info text-white w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-table"></i> Adicionar Resultados
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-    <div>
-        <h4>Exportar Resultados</h4>
-        <p>Aqui você pode exportar os resultados do torneio para um arquivo CSV.</p>
-        <!-- Link para exportar resultados do torneio -->
-        <a href="@Url.Action("ExportGames", "Admin")" class="btn btn-success">Exportar Resultados para CSV</a>
+            <!-- Card de Exportar Resultados -->
+            <div class="col-lg-4 col-md-12">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title border-bottom pb-2 text-primary">Exportar Resultados</h4>
+                        <p class="card-text">Aqui você pode exportar os resultados do torneio para um arquivo CSV.</p>
+                        <!-- Link para exportar resultados do torneio -->
+                        <a href="@Url.Action("ExportGames", "Admin")" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Exportar Resultados para CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

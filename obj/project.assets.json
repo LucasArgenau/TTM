@@ -6539,19 +6539,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Pichau\\.nuget\\packages\\": {}
+    "C:\\Users\\luisf\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Pichau\\Pictures\\TTM-main\\TorneioTenisMesa.csproj",
+      "projectUniqueName": "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj",
       "projectName": "TorneioTenisMesa",
-      "projectPath": "C:\\Users\\Pichau\\Pictures\\TTM-main\\TorneioTenisMesa.csproj",
-      "packagesPath": "C:\\Users\\Pichau\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Pichau\\Pictures\\TTM-main\\obj\\",
+      "projectPath": "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj",
+      "packagesPath": "C:\\Users\\luisf\\.nuget\\packages\\",
+      "outputPath": "C:\\Estudos\\TTM\\ttm\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Pichau\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\luisf\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -6638,7 +6638,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.408/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
