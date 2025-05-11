@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj": {}
+    "C:\\Estudos\\TTM\\TTM\\TorneioTenisMesa.csproj": {}
   },
   "projects": {
-    "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj": {
+    "C:\\Estudos\\TTM\\TTM\\TorneioTenisMesa.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj",
+        "projectUniqueName": "C:\\Estudos\\TTM\\TTM\\TorneioTenisMesa.csproj",
         "projectName": "TorneioTenisMesa",
-        "projectPath": "C:\\Estudos\\TTM\\ttm\\TorneioTenisMesa.csproj",
+        "projectPath": "C:\\Estudos\\TTM\\TTM\\TorneioTenisMesa.csproj",
         "packagesPath": "C:\\Users\\luisf\\.nuget\\packages\\",
-        "outputPath": "C:\\Estudos\\TTM\\ttm\\obj\\",
+        "outputPath": "C:\\Estudos\\TTM\\TTM\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\luisf\\AppData\\Roaming\\NuGet\\NuGet.Config"

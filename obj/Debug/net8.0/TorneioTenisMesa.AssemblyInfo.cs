@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TorneioTenisMesa")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2c48a669624696fbc01aac41ea36141fd9b88c7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+55031d4d4409d45751c5c43e6d64ebbdf444f640")]
 [assembly: System.Reflection.AssemblyProductAttribute("TorneioTenisMesa")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TorneioTenisMesa")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
