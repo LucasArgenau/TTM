@@ -13,8 +13,26 @@ public class HomeController : Controller
         _logger = logger;
     }
 
+    // Página inicial (Home)
     public IActionResult Index()
     {
+        // Verifica se o usuário está autenticado
+        if (User.Identity!.IsAuthenticated)
+        {
+            // Se estiver logado, verifica o papel do usuário
+            if (User.IsInRole("Admin"))
+            {
+                // Redireciona para o painel do Admin
+                return RedirectToAction("Index", "Admin");
+            }
+            else if (User.IsInRole("Player"))
+            {
+                // Redireciona para o painel do Jogador
+                return RedirectToAction("Index", "Player");
+            }
+        }
+
+        // Se não estiver logado, retorna para a tela de login
         return View();
     }
 

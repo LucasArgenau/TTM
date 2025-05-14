@@ -1,0 +1,20 @@
+@model IEnumerable<dynamic>
+
+<h2>Ranking</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Jogador</th>
+            <th>Rating</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var player in Model)
+        {
+            <tr>
+                <td>@player.UserName</td>
+                <td>@player.Rating</td>
+            </tr>
+        }
+    </tbody>
+</table>

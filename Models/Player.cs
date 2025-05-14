@@ -28,7 +28,10 @@ namespace TorneioTenisMesa.Models
         public Tournament? Tournament { get; set; }
         public User? User { get; set; }
 
-        public List<Game> GamesAsPlayer1 { get; set; } = new();
-        public List<Game> GamesAsPlayer2 { get; set; } = new();
+        // Lista única de jogos, com a diferenciação do papel (Player1 ou Player2)
+        public List<Game> Games { get; set; } = new();
+
+        // Código do jogador, se necessário
+        public string? PlayerCode { get; internal set; }
     }
 }

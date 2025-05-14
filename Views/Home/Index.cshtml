@@ -1,8 +1,26 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Home";
+    var user = HttpContextAccessor.HttpContext?.User;
+    var isAdmin = user?.Identity?.IsAuthenticated == true && user.IsInRole("Admin");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container text-center py-5">
+    <h1 class="display-4 text-dark">Bem-vindo ao Sistema de Torneios de Tênis de Mesa</h1>
+    <p class="lead text-primary">Gerencie torneios, jogadores e rankings de forma fácil e eficiente.</p>
+    
+    <img src="/images/tenis-de-mesa.jpeg" alt="Tênis de Mesa" class="img-fluid rounded-4 shadow my-4" style="max-width: 80%; border: 2px solid #1E90FF;">
+    
+    <p class="text-secondary">Nosso sistema foi desenvolvido para organizar campeonatos de tênis de mesa de forma rápida e intuitiva. Torneios, jogos, rankings, tudo na palma da sua mão!</p>
+
+    @if (user?.Identity?.IsAuthenticated != true)
+    {
+        <a href="/Account/Login" class="btn btn-primary btn-lg mt-3" role="button">Entrar</a>
+    }
+    else if (isAdmin)
+    {
+        <a href="/Admin/ImportCsv" class="btn btn-success btn-lg mt-3" role="button">Importar Jogadores via CSV</a>
+    }
 </div>

@@ -1,18 +1,16 @@
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace TorneioTenisMesa.Models
 {
-    public class User
+    public class User : IdentityUser<int>
     {
-        public int Id { get; set; }
+        [Required]
+        public override string? UserName { get; set; }
 
         [Required]
-        public string? UserName { get; set; }
+        public override string? PasswordHash { get; set; }
 
-        [Required]
-        public string? PasswordHash { get; set; }
-
-        // Propriedade opcional para indicar tipo de usuário (Admin ou Player)
         public string Role { get; set; } = "Player";
     }
 }

@@ -1,0 +1,44 @@
+@model List<Game>  //<!-- Define que a view espera um modelo do tipo List<Game> -->
+
+@{
+    ViewData["Title"] = "Gerenciamento de Resultados";
+}
+
+<h2>Gerenciamento de Resultados</h2>
+
+<form asp-action="SaveResults" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Jogador 1</th>
+                <th>Jogador 2</th>
+                <th>Rating 1</th>
+                <th>Rating 2</th>
+                <th>Resultado</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model)
+            {
+                <tr>
+                    <td>@game.Player1?.Name</td>
+                    <td>@game.Player2?.Name</td>
+                    <td>@game.Player1?.Rating</td>
+                    <td>@game.Player2?.Rating</td>
+                    <td>
+                        <!-- Aqui você pode colocar os campos de resultado -->
+                        <input type="number" name="ScorePlayer1_@game.Id" placeholder="Score Player 1" class="form-control" />
+                        <input type="number" name="ScorePlayer2_@game.Id" placeholder="Score Player 2" class="form-control" />
+                    </td>
+                    <td>
+                        <!-- Não é necessário um botão para cada linha, o botão de submit está no final -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Botão de submit fora do loop, para enviar todos os resultados de uma vez -->
+    <button type="submit" class="btn btn-primary">Adicionar Resultados</button>
+</form>

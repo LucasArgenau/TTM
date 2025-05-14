@@ -22,7 +22,13 @@ namespace TorneioTenisMesa.Models
 
         public string? Group { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } // Data do jogo
+
+        // Novo campo: Rodada do jogo no torneio
+        public int Round { get; set; }
+
+        // Novo campo: Número do jogo (para distinguir entre os jogos)
+        public int GameNo { get; set; }
 
         // Navegações
         public Player? Player1 { get; set; }

@@ -15,7 +15,10 @@ namespace TorneioTenisMesa.Models
         public DateTime EndDate { get; set; }
 
         [ForeignKey("User")]
-        public int AdminUserId { get; set; }
+        public int? AdminUserId { get; set; }
+
+        // Navegação para o usuário (admin) associado ao torneio
+        public User? AdminUser { get; set; }
 
         // Navegações
         public List<Player> Players { get; set; } = new();

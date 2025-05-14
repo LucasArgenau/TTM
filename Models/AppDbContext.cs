@@ -1,29 +1,33 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using TorneioTenisMesa.Models;
-
 
 namespace TorneioTenisMesa.Models
 {
-    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+    // Definindo User com chave primária do tipo int
+    public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
-        public ISet<User>? Users { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Game> Games { get; set; }
 
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder); // sempre chamar antes ou depois das configurações
+
             // Game → Player1
             modelBuilder.Entity<Game>()
                 .HasOne(g => g.Player1)
-                .WithMany(p => p.GamesAsPlayer1)
+                .WithMany()
                 .HasForeignKey(g => g.Player1Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Game → Player2
             modelBuilder.Entity<Game>()
                 .HasOne(g => g.Player2)
-                .WithMany(p => p.GamesAsPlayer2)
+                .WithMany()
                 .HasForeignKey(g => g.Player2Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -50,12 +54,10 @@ namespace TorneioTenisMesa.Models
 
             // Tournament → Admin User
             modelBuilder.Entity<Tournament>()
-                .HasOne<User>()
+                .HasOne<User>(t => t.AdminUser)
                 .WithMany()
                 .HasForeignKey(t => t.AdminUserId)
                 .OnDelete(DeleteBehavior.NoAction);
-
-            base.OnModelCreating(modelBuilder);
         }
     }
 }

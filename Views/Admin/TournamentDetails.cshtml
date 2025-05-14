@@ -1,0 +1,62 @@
+@model TorneioTenisMesa.Models.Tournament
+
+@{
+    ViewData["Title"] = "Detalhes do Torneio";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model != null)
+{
+    <h3>@Model.Name</h3>
+    <p><strong>Data de Início:</strong> @Model.StartDate.ToString("dd/MM/yyyy")</p>
+    <p><strong>Data de Término:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</p>
+
+    <h4>Jogadores</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Grupo</th>
+                <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var player in Model.Players)
+            {
+                <tr>
+                    <td>@player.Name</td>
+                    <td>@player.Group</td>
+                    <td>@player.Rating</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Jogos</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Jogador 1</th>
+                <th>Jogador 2</th>
+                <th>Data</th>
+                <th>Resultado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model.Games)
+            {
+                <tr>
+                    <td>@game.Player1!.Name</td>
+                    <td>@game.Player2!.Name</td>
+                    <td>@game.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@game.ScorePlayer1 - @game.ScorePlayer2</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Nenhum torneio encontrado.</p>
+}
