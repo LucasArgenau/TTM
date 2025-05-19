@@ -6584,19 +6584,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Aluno\\.nuget\\packages\\": {}
+    "C:\\Users\\luisf\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Aluno\\Pictures\\TTM-luis (2)\\TTM-luis\\TorneioTenisMesa.csproj",
+      "projectUniqueName": "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj",
       "projectName": "TorneioTenisMesa",
-      "projectPath": "C:\\Users\\Aluno\\Pictures\\TTM-luis (2)\\TTM-luis\\TorneioTenisMesa.csproj",
-      "packagesPath": "C:\\Users\\Aluno\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Aluno\\Pictures\\TTM-luis (2)\\TTM-luis\\obj\\",
+      "projectPath": "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj",
+      "packagesPath": "C:\\Users\\luisf\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\luisf\\Desktop\\test\\TTM\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Aluno\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\luisf\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -6619,8 +6619,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.200"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -6680,24 +6679,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[8.0.15, 8.0.15]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[8.0.15, 8.0.15]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.15, 8.0.15]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[8.0.15, 8.0.15]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -6706,7 +6687,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
