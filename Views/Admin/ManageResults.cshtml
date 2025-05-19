@@ -13,7 +13,7 @@
     </div>
 }
 
-@if (Model.Count == 0)
+@if (!Model.Any())
 {
     <div class="alert alert-info">Nenhum jogo disponível para inserir resultados.</div>
 }
@@ -39,15 +39,15 @@ else
                     <tr>
                         <td>@Model[i].Player1Name</td>
                         <td>
-                            <input type="number" asp-for="@Model[i].ScorePlayer1" class="form-control" />
-                            <input type="hidden" asp-for="@Model[i].GameId" />
+                            <input type="hidden" name="[@i].GameId" value="@Model[i].GameId" />
+                            <input type="number" name="[@i].ScorePlayer1" value="@Model[i].ScorePlayer1" class="form-control" />
                         </td>
                         <td>@Model[i].Player2Name</td>
                         <td>
-                            <input type="number" asp-for="@Model[i].ScorePlayer2" class="form-control" />
+                            <input type="number" name="[@i].ScorePlayer2" value="@Model[i].ScorePlayer2" class="form-control" />
                         </td>
-                        <td>@Model[i].Group</td>
-                        <td>@Model[i].Date.ToString("dd/MM/yyyy")</td>
+                        <td>@Model[i].Group</td> <!-- Apenas exibe -->
+                        <td>@Model[i].Date.ToString("dd/MM/yyyy")</td> <!-- Apenas exibe -->
                     </tr>
                 }
             </tbody>

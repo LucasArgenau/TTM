@@ -18,15 +18,12 @@ namespace TorneioTenisMesa.Models
 
         public string? Group { get; set; }
 
-        [ForeignKey("Tournament")]
-        public int TournamentId { get; set; }
-
         [ForeignKey("User")]
         public int UserId { get; set; }
 
-        // Navegações
-        public Tournament? Tournament { get; set; }
         public User? User { get; set; }
+        // Relacionamento muitos-para-muitos com torneios
+        public List<TournamentPlayer> TournamentPlayers { get; set; } = new();
 
         // Lista única de jogos, com a diferenciação do papel (Player1 ou Player2)
         public List<Game> Games { get; set; } = new();

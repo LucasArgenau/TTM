@@ -21,7 +21,7 @@ namespace TorneioTenisMesa.Models
         public User? AdminUser { get; set; }
 
         // Navegações
-        public List<Player> Players { get; set; } = new();
+        public List<TournamentPlayer> TournamentPlayers { get; set; } = new();
         public List<Game> Games { get; set; } = new();
     }
 }

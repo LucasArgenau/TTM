@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using TorneioTenisMesa.Models;
 using TorneioTenisMesa.Models.ViewModels;
 
@@ -20,7 +21,6 @@ public class AdminController : Controller
         _context = context;
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> Index()
     {
@@ -68,53 +68,81 @@ public class AdminController : Controller
 
         try
         {
-            // Lê os jogadores a partir do arquivo CSV
-            var players = ParseCsv(model.CsvFile, model.TournamentId);
+            var tournament = await _context.Tournaments.FindAsync(model.TournamentId);
+            if (tournament == null)
+            {
+                ModelState.AddModelError("", "Torneio não encontrado.");
+                return View(model);
+            }
 
-            // Verifica e adiciona os jogadores ou atualiza os existentes
+            var players = ParseCsv(model.CsvFile, model.TournamentId); // Remove TournamentId aqui também
+            var games = new List<Game>();
+
             foreach (var player in players)
             {
+                // Verifica se já existe um Player com o mesmo RatingsCentralId
                 var existingPlayer = await _context.Players
-                    .FirstOrDefaultAsync(p => p.RatingsCentralId == player.RatingsCentralId && p.TournamentId == model.TournamentId);
+                    .FirstOrDefaultAsync(p => p.RatingsCentralId == player.RatingsCentralId);
 
                 if (existingPlayer == null)
                 {
-                    _context.Players.Add(player); // Adiciona novo jogador
+                    _context.Players.Add(player);
+                    await _context.SaveChangesAsync(); // Salva para ter o Id gerado
+
+                    // Vincula ao torneio
+                    _context.Add(new TournamentPlayer
+                    {
+                        PlayerId = player.Id,
+                        TournamentId = tournament.Id
+                    });
                 }
                 else
                 {
+                    // Atualiza dados do jogador
                     existingPlayer.Name = player.Name;
                     existingPlayer.Group = player.Group;
                     existingPlayer.Rating = player.Rating;
-                    existingPlayer.StDev = player.StDev; // Atualiza as informações do jogador
+                    existingPlayer.StDev = player.StDev;
+
+                    // Verifica se já está vinculado ao torneio
+                    bool isLinked = await _context.TournamentPlayers
+                        .AnyAsync(tp => tp.PlayerId == existingPlayer.Id && tp.TournamentId == tournament.Id);
+
+                    if (!isLinked)
+                    {
+                        _context.Add(new TournamentPlayer
+                        {
+                            PlayerId = existingPlayer.Id,
+                            TournamentId = tournament.Id
+                        });
+                    }
                 }
             }
 
-            // Salva as alterações dos jogadores (adicionados ou atualizados)
             await _context.SaveChangesAsync();
 
-            // Atualiza a lista de jogadores para o torneio
-            var savedPlayers = await _context.Players
-                .Where(p => p.TournamentId == model.TournamentId)
+            // Obtém os jogadores vinculados a esse torneio (com grupo)
+            var savedPlayers = await _context.TournamentPlayers
+                .Include(tp => tp.Player)
+                .Where(tp => tp.TournamentId == model.TournamentId)
+                .Select(tp => tp.Player)
                 .ToListAsync();
 
-            // Gera os jogos automaticamente
-            var games = new List<Game>();
-            var groups = savedPlayers.GroupBy(p => p.Group);
+            // Agrupa por grupo e gera os confrontos
+            var groups = savedPlayers.GroupBy(p => p!.Group);
 
             foreach (var group in groups)
             {
                 var groupPlayers = group.ToList();
-
                 for (int i = 0; i < groupPlayers.Count; i++)
                 {
                     for (int j = i + 1; j < groupPlayers.Count; j++)
                     {
                         games.Add(new Game
                         {
-                            Player1Id = groupPlayers[i].Id,
-                            Player2Id = groupPlayers[j].Id,
-                            TournamentId = model.TournamentId,
+                            Player1Id = groupPlayers[i]!.Id,
+                            Player2Id = groupPlayers[j]!.Id,
+                            TournamentId = tournament.Id,
                             Group = group.Key,
                             Date = DateTime.Now
                         });
@@ -122,21 +150,14 @@ public class AdminController : Controller
                 }
             }
 
-            // Adiciona os jogos ao banco de dados
             await _context.Games.AddRangeAsync(games);
-
-            // Salva as alterações dos jogos
             await _context.SaveChangesAsync();
 
-            // Mensagem de sucesso (opcional)
-            model.SuccessMessage = "Jogadores importados e jogos gerados com sucesso!";
-
-            // Redireciona para a tela de gerenciamento de resultados
-            return RedirectToAction("ManagerResults", new { tournamentId = model.TournamentId });
+            model.SuccessMessage = "Jogadores importados e confrontos criados com sucesso!";
+            return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
         }
         catch (Exception ex)
         {
-            // Em caso de erro, adiciona uma mensagem de erro
             ModelState.AddModelError("", $"Erro ao processar o arquivo CSV: {ex.Message}");
             return View(model);
         }
@@ -144,50 +165,14 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SaveResults(IFormCollection form)
-    {
-        // Obtém os IDs dos jogos do formulário e os resultados
-        var gameIds = form.Keys.Where(k => k.StartsWith("ScorePlayer1_")).ToList();
-        var games = await _context.Games.Where(g => gameIds.Contains($"ScorePlayer1_{g.Id}")).ToListAsync();
-
-        foreach (var game in games)
-        {
-            // Obtém os resultados enviados pelo formulário
-            int scorePlayer1 = 0;
-            if (!StringValues.IsNullOrEmpty(form[$"ScorePlayer1_{game.Id}"]))
-
-            {
-                int.TryParse(form[$"ScorePlayer1_{game.Id}"], out scorePlayer1);
-            }
-
-            int scorePlayer2 = 0;
-            if (!StringValues.IsNullOrEmpty(form[$"ScorePlayer2_{game.Id}"]))
-
-            {
-                int.TryParse(form[$"ScorePlayer2_{game.Id}"], out scorePlayer2);
-            }
-
-            // Atualiza os scores dos jogadores
-            game.ScorePlayer1 = scorePlayer1;
-            game.ScorePlayer2 = scorePlayer2;
-        }
-
-        // Salva as mudanças no banco de dados
-        await _context.SaveChangesAsync();
-
-        // Redireciona para a página de gerenciamento de resultados ou onde for necessário
-        return RedirectToAction("ManagerResults", new { tournamentId = games.First().TournamentId });
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> GenerateGames(int tournamentId)
     {
-        var players = await _context.Players
-            .Where(p => p.TournamentId == tournamentId)
+        var players = await _context.TournamentPlayers
+            .Where(tp => tp.TournamentId == tournamentId)
+            .Select(tp => tp.Player)
             .ToListAsync();
 
-        var groups = players.GroupBy(p => p.Group);
+        var groups = players.GroupBy(p => p!.Group);
         var games = new List<Game>();
 
         foreach (var group in groups)
@@ -200,8 +185,8 @@ public class AdminController : Controller
                 {
                     var game = new Game
                     {
-                        Player1Id = groupPlayers[i].Id,
-                        Player2Id = groupPlayers[j].Id,
+                        Player1Id = groupPlayers[i]!.Id,
+                        Player2Id = groupPlayers[j]!.Id,
                         TournamentId = tournamentId,
                         Group = group.Key,
                         Date = DateTime.Now
@@ -215,11 +200,12 @@ public class AdminController : Controller
         await _context.Games.AddRangeAsync(games);
         await _context.SaveChangesAsync();
 
-        return RedirectToAction("ManagerResults", new { tournamentId = tournamentId });
+        return RedirectToAction("ManageResults", new { tournamentId = tournamentId });
     }
     private List<Player> ParseCsv(IFormFile csvFile, int tournamentId)
     {
         var players = new List<Player>();
+        var random = new Random();
 
         using (var reader = new StreamReader(csvFile.OpenReadStream()))
         {
@@ -235,33 +221,56 @@ public class AdminController : Controller
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
 
-                var values = line.Split(',');
+                // Usa Regex para dividir CSV com campos entre aspas
+                var values = Regex.Matches(line, @"(?:^|,)(?:""(?<val>[^""]*)""|(?<val>[^,]*))")
+                                .Cast<Match>()
+                                .Select(m => m.Groups["val"].Value.Trim())
+                                .ToArray();
 
-                // Validação mínima de colunas (esperado: pelo menos 8 colunas)
                 if (values.Length < 8)
                 {
                     Console.WriteLine($"Linha {lineNumber} ignorada: número insuficiente de colunas.");
                     continue;
                 }
 
-                // Conversões seguras
-                if (!int.TryParse(values[1], out int ratingsCentralId) ||
-                    !int.TryParse(values[4], out int rating) ||
-                    !int.TryParse(values[5], out int stDev))
+                if (!int.TryParse(values[1], out int ratingsCentralId))
                 {
-                    Console.WriteLine($"Linha {lineNumber} ignorada: erro ao converter inteiros.");
+                    Console.WriteLine($"Linha {lineNumber} ignorada: RatingsCentralId inválido.");
                     continue;
                 }
 
+                // Rating
+                int rating = 0;
+                if (!string.Equals(values[4], "NA", StringComparison.OrdinalIgnoreCase))
+                    int.TryParse(values[4], out rating);
+
+                // StDev
+                int stDev = 0;
+                if (!string.Equals(values[5], "NA", StringComparison.OrdinalIgnoreCase))
+                    int.TryParse(values[5], out stDev);
+
+                var userName = $"player{ratingsCentralId}";
+                var plainPassword = $"senha{random.Next(1000, 9999)}";
+                var passwordHash = BCrypt.Net.BCrypt.HashPassword(plainPassword);
+
+                var user = new User
+                {
+                    UserName = userName,
+                    PasswordHash = passwordHash,
+                    Role = "Player"
+                };
+
                 var player = new Player
                 {
-                    Name = values[0].Trim(),
+                    Name = values[3], // Nome completo (ex: "Hemen Estefaie")
                     RatingsCentralId = ratingsCentralId,
                     Rating = rating,
                     StDev = stDev,
-                    Group = values[7].Trim(),
-                    TournamentId = tournamentId
+                    Group = values[7],
+                    User = user
                 };
+
+                Console.WriteLine($"Adicionando jogador: {player.Name}, RCID: {ratingsCentralId}, Grupo: {player.Group}");
 
                 players.Add(player);
             }
@@ -270,27 +279,36 @@ public class AdminController : Controller
         return players;
     }
 
-    public IActionResult ManagerResults(int tournamentId)
+    [HttpGet]
+    public IActionResult ManageResults(int tournamentId)
     {
         try
         {
             var games = _context.Games
                 .Where(g => g.TournamentId == tournamentId)
-                .Include(g => g.Player1) 
-                .Include(g => g.Player2) 
+                .Include(g => g.Player1)
+                .Include(g => g.Player2)
                 .ToList();
-            
-            return View(games);
+
+            var model = games.Select(g => new GameResultViewModel
+            {
+                GameId = g.Id,
+                Player1Name = g.Player1?.Name ?? "N/A",
+                Player2Name = g.Player2?.Name ?? "N/A",
+                ScorePlayer1 = g.ScorePlayer1,
+                ScorePlayer2 = g.ScorePlayer2,
+                Group = g.Group!,
+                Date = g.Date
+            }).ToList();
+
+            return View(model);
         }
         catch (Exception ex)
         {
-            // Log do erro
             Console.WriteLine(ex.Message);
-            return View("Error"); // Ou a view de erro que você preferir
+            return View("Error");
         }
     }
-
-
     
     [HttpGet]
     public IActionResult ExportGames()
@@ -363,12 +381,12 @@ public class AdminController : Controller
         return RedirectToAction("ImportCsv", new { tournamentId = tournament.Id });
     }
 
-    // Detalhes de um torneio específico
     [HttpGet]
     public IActionResult TournamentDetails(int id)
     {
         var tournament = _context.Tournaments
-            .Include(t => t.Players)
+            .Include(t => t.TournamentPlayers)
+                .ThenInclude(tp => tp.Player)      // Inclui os jogadores dentro da tabela associativa
             .Include(t => t.Games).ThenInclude(g => g.Player1)
             .Include(t => t.Games).ThenInclude(g => g.Player2)
             .FirstOrDefault(t => t.Id == id);
@@ -379,52 +397,30 @@ public class AdminController : Controller
         return View("TournamentDetails", tournament);
     }
 
-    // GET: /Admin/ManageResults
-        [HttpGet]
-        public IActionResult ManageResults()
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateGameResults(List<GameResultViewModel> gameResults)
+    {
+        foreach (var result in gameResults)
         {
-            var games = _context.Games
-                .Include(g => g.Player1)
-                .Include(g => g.Player2)
-                .Include(g => g.Tournament)
-                .ToList();
+            if (result.ScorePlayer1 < 0 || result.ScorePlayer2 < 0)
+                continue; // Ignora pontuações inválidas
 
-            var model = games.Select(g => new GameResultViewModel
+            var game = await _context.Games.FindAsync(result.GameId);
+            if (game != null)
             {
-                GameId = g.Id,
-                Player1Name = g.Player1?.Name ?? "N/A",
-                Player2Name = g.Player2?.Name ?? "N/A",
-                ScorePlayer1 = g.ScorePlayer1,
-                ScorePlayer2 = g.ScorePlayer2,
-                Group = g.Group!,
-                Date = g.Date
-            }).ToList();
-
-            return View(model);
-        }
-
-        // POST: /Admin/UpdateGameResults
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateGameResults(List<GameResultViewModel> gameResults)
-        {
-            foreach (var result in gameResults)
-            {
-                if (result.ScorePlayer1 < 0 || result.ScorePlayer2 < 0)
-                    continue; // Ignora resultados inválidos
-
-                var game = await _context.Games.FindAsync(result.GameId);
-                if (game != null)
-                {
-                    game.ScorePlayer1 = result.ScorePlayer1;
-                    game.ScorePlayer2 = result.ScorePlayer2;
-                }
+                game.ScorePlayer1 = result.ScorePlayer1;
+                game.ScorePlayer2 = result.ScorePlayer2;
             }
-
-            await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Resultados atualizados com sucesso!";
-            return RedirectToAction(nameof(ManageResults));
         }
+
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Resultados atualizados com sucesso!";
+        return RedirectToAction(nameof(ManageResults));
+    }
+
     // Geração de senha aleatória segura
     private string GenerateRandomPassword(int length)
     {

@@ -33,6 +33,12 @@
     .alert {
         margin-top: 20px;
     }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
 </style>
 
 <div class="form-container">
@@ -91,10 +97,19 @@
             </tbody>
         </table>
 
-        <form asp-action="GenerateGames" method="post" style="margin-top: 20px;">
-            <input type="hidden" name="tournamentId" value="@Model.TournamentId" />
-            <button type="submit" class="btn btn-success">Próximo: Gerar Confrontos</button>
-        </form>
+        <div class="btn-group">
+            <!-- Botão para gerar confrontos (já existia) -->
+            <form asp-action="GenerateGames" method="post">
+                <input type="hidden" name="tournamentId" value="@Model.TournamentId" />
+                <button type="submit" class="btn btn-success">Próximo: Gerar Confrontos</button>
+            </form>
+
+            <!-- Novo botão: adicionar resultados -->
+            <form asp-action="ManageResults" method="get">
+                <input type="hidden" name="tournamentId" value="@Model.TournamentId" />
+                <button type="submit" class="btn btn-primary">Adicionar Resultados</button>
+            </form>
+        </div>
     }
 </div>
 

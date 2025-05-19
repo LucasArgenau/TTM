@@ -22,12 +22,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var player in Model.Players)
+            @foreach (var tp in Model.TournamentPlayers)
             {
                 <tr>
-                    <td>@player.Name</td>
-                    <td>@player.Group</td>
-                    <td>@player.Rating</td>
+                    <td>@tp.Player!.Name</td>
+                    <td>@tp.Player.Group</td>
+                    <td>@tp.Player.Rating</td>
                 </tr>
             }
         </tbody>

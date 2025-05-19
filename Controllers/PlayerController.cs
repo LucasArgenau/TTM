@@ -22,7 +22,7 @@ public class PlayerController : Controller
         var userId = User.Identity!.Name;
         var player = await _context.Players
             .Include(p => p.User)
-            .Include(p => p.Tournament)
+            .Include(p => p.TournamentPlayers)
             .FirstOrDefaultAsync(p => p.User!.UserName == userId);
 
         if (player == null)
@@ -40,7 +40,7 @@ public class PlayerController : Controller
         var userId = User.Identity!.Name;
         var player = await _context.Players
             .Include(p => p.User)
-            .Include(p => p.Tournament)
+            .Include(p => p.TournamentPlayers)
             .FirstOrDefaultAsync(p => p.User!.UserName == userId);
 
         if (player == null)
@@ -109,15 +109,15 @@ public class PlayerController : Controller
     {
         var userId = User.Identity!.Name;
         var player = await _context.Players
-            .Include(p => p.Tournament)
+            .Include(p => p.TournamentPlayers)
             .FirstOrDefaultAsync(p => p.User!.UserName == userId);
 
-        if (player == null || player.Tournament == null)
+        if (player == null || player.TournamentPlayers == null)
         {
             return NotFound("Jogador ou torneio não encontrado.");
         }
 
-        var tournament = player.Tournament;
+        var tournament = player.TournamentPlayers;
         return View(tournament);
     }
 }
