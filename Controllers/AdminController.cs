@@ -309,7 +309,7 @@ public class AdminController : Controller
             return View("Error");
         }
     }
-    
+
     [HttpGet]
     public IActionResult ExportGames()
     {
@@ -445,4 +445,72 @@ public class AdminController : Controller
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
         return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
     }
+
+        [HttpGet]
+    public IActionResult EditTournament(int tournamentId)
+    {
+        var tournament = _context.Tournaments
+            .Include(t => t.TournamentPlayers)
+                .ThenInclude(tp => tp.Player)
+            .Include(t => t.Games)
+            .FirstOrDefault(t => t.Id == tournamentId);
+
+        if (tournament == null || tournament.TournamentPlayers == null || tournament.Games == null)
+            return NotFound();
+
+        var model = new TournamentViewModel
+        {
+            TournamentId = tournament.Id,
+            TournamentName = tournament.Name!,
+            Players = tournament.TournamentPlayers
+                .Where(tp => tp.Player != null)
+                .Select(tp => tp.Player!)
+                .OrderBy(p => p.Name)
+                .ToList(),
+            Games = tournament.Games.ToList()
+        };
+
+        return View(model);
+    }
+    
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+    public IActionResult EditTournament(IFormCollection form)
+    {
+        if (!int.TryParse(form["TournamentId"], out int tournamentId))
+            return BadRequest();
+
+        var gamesInDb = _context.Games.Where(g => g.TournamentId == tournamentId).ToList();
+
+        foreach (var key in form.Keys)
+        {
+            if (key.StartsWith("Games[") && key.EndsWith("].Player1Id"))
+            {
+                var idPart = key.Substring(6, key.Length - 6 - 12); // extrai 1_2 de Games[1_2].Player1Id
+
+                var player1Id = int.Parse(form[$"Games[{idPart}].Player1Id"]);
+                var player2Id = int.Parse(form[$"Games[{idPart}].Player2Id"]);
+                var score1 = int.Parse(form[$"Games[{idPart}].ScorePlayer1"]);
+                var score2 = int.Parse(form[$"Games[{idPart}].ScorePlayer2"]);
+
+                var game = gamesInDb.FirstOrDefault(g =>
+                    (g.Player1Id == player1Id && g.Player2Id == player2Id) ||
+                    (g.Player1Id == player2Id && g.Player2Id == player1Id));
+
+                if (game != null)
+                {
+                    game.Player1Id = player1Id;
+                    game.Player2Id = player2Id;
+                    game.ScorePlayer1 = score1;
+                    game.ScorePlayer2 = score2;
+                    game.Date = DateTime.Now;
+                }
+            }
+        }
+
+        _context.SaveChanges();
+        TempData["SuccessMessage"] = "Partidas atualizadas com sucesso!";
+        return RedirectToAction("TournamentDetails", new { id = tournamentId });
+    }
+
 }

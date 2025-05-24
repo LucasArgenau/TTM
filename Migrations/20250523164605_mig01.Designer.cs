@@ -12,8 +12,8 @@ using TorneioTenisMesa.Models;
 namespace TorneioTenisMesa.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250513201042_FirstMigration")]
-    partial class FirstMigration
+    [Migration("20250523164605_mig01")]
+    partial class mig01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -236,15 +236,10 @@ namespace TorneioTenisMesa.Migrations
                     b.Property<int>("StDev")
                         .HasColumnType("int");
 
-                    b.Property<int>("TournamentId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TournamentId");
 
                     b.HasIndex("UserId");
 
@@ -277,6 +272,21 @@ namespace TorneioTenisMesa.Migrations
                     b.HasIndex("AdminUserId");
 
                     b.ToTable("Tournaments");
+                });
+
+            modelBuilder.Entity("TorneioTenisMesa.Models.TournamentPlayer", b =>
+                {
+                    b.Property<int>("TournamentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TournamentId", "PlayerId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("TournamentPlayers");
                 });
 
             modelBuilder.Entity("TorneioTenisMesa.Models.User", b =>
@@ -425,7 +435,7 @@ namespace TorneioTenisMesa.Migrations
                     b.HasOne("TorneioTenisMesa.Models.Tournament", "Tournament")
                         .WithMany("Games")
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Player1");
@@ -437,19 +447,11 @@ namespace TorneioTenisMesa.Migrations
 
             modelBuilder.Entity("TorneioTenisMesa.Models.Player", b =>
                 {
-                    b.HasOne("TorneioTenisMesa.Models.Tournament", "Tournament")
-                        .WithMany("Players")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("TorneioTenisMesa.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.ClientNoAction)
                         .IsRequired();
-
-                    b.Navigation("Tournament");
 
                     b.Navigation("User");
                 });
@@ -464,16 +466,37 @@ namespace TorneioTenisMesa.Migrations
                     b.Navigation("AdminUser");
                 });
 
+            modelBuilder.Entity("TorneioTenisMesa.Models.TournamentPlayer", b =>
+                {
+                    b.HasOne("TorneioTenisMesa.Models.Player", "Player")
+                        .WithMany("TournamentPlayers")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TorneioTenisMesa.Models.Tournament", "Tournament")
+                        .WithMany("TournamentPlayers")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Tournament");
+                });
+
             modelBuilder.Entity("TorneioTenisMesa.Models.Player", b =>
                 {
                     b.Navigation("Games");
+
+                    b.Navigation("TournamentPlayers");
                 });
 
             modelBuilder.Entity("TorneioTenisMesa.Models.Tournament", b =>
                 {
                     b.Navigation("Games");
 
-                    b.Navigation("Players");
+                    b.Navigation("TournamentPlayers");
                 });
 #pragma warning restore 612, 618
         }

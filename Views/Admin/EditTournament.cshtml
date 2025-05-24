@@ -1,0 +1,79 @@
+@model TournamentViewModel
+
+@{
+    ViewData["Title"] = "Edit Tournament";
+}
+
+<h2>Edit Tournament - @Model.TournamentName</h2>
+
+<form asp-action="EditTournament" method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="TournamentId" value="@Model.TournamentId" />
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Player 1</th>
+                <th>Player 2</th>
+                <th>Score Player 1</th>
+                <th>Score Player 2</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Players.Count; i++)
+            {
+                for (int j = i + 1; j < Model.Players.Count; j++)
+                {
+                    var player1 = Model.Players[i];
+                    var player2 = Model.Players[j];
+                    var game = Model.GetGame(player1.Id, player2.Id);
+                    var key = $"{player1.Id}_{player2.Id}";
+
+                    <tr>
+                        <td>
+                            <select name="Games[@key].Player1Id" class="form-control">
+                                @foreach (var p in Model.Players)
+                                {
+                                    @if (p.Id == game?.Player1Id)
+                                    {
+                                        <option value="@p.Id" selected="selected">@p.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@p.Id">@p.Name</option>
+                                    }
+
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <select name="Games[@key].Player2Id" class="form-control">
+                                @foreach (var p in Model.Players)
+                                {
+                                    @if (p.Id == game?.Player1Id)
+                                    {
+                                        <option value="@p.Id" selected="selected">@p.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@p.Id">@p.Name</option>
+                                    }
+
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="Games[@key].ScorePlayer1" value="@(game?.ScorePlayer1 ?? 0)" min="0" class="form-control" />
+                        </td>
+                        <td>
+                            <input type="number" name="Games[@key].ScorePlayer2" value="@(game?.ScorePlayer2 ?? 0)" min="0" class="form-control" />
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success">Salvar</button>
+</form>
