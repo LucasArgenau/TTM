@@ -1,79 +1,110 @@
-@model TournamentViewModel
-
+@model TorneioTenisMesa.Models.ViewModels.TournamentViewModel
 @{
-    ViewData["Title"] = "Edit Tournament";
+    ViewData["Title"] = "Editar Torneio";
+    var jogadores = Model.Players.OrderBy(p => p.Name).ToList();
+    var jogos = Model.Games;
 }
 
-<h2>Edit Tournament - @Model.TournamentName</h2>
+<div class="container">
+    <h2 class="text-center mb-4">@Model.TournamentName - Edição de Resultados</h2>
 
-<form asp-action="EditTournament" method="post">
-    @Html.AntiForgeryToken()
+    <form asp-action="EditTournament" method="post">
+        <input type="hidden" name="TournamentId" value="@Model.TournamentId" />
 
-    <input type="hidden" name="TournamentId" value="@Model.TournamentId" />
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Player 1</th>
-                <th>Player 2</th>
-                <th>Score Player 1</th>
-                <th>Score Player 2</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.Players.Count; i++)
-            {
-                for (int j = i + 1; j < Model.Players.Count; j++)
-                {
-                    var player1 = Model.Players[i];
-                    var player2 = Model.Players[j];
-                    var game = Model.GetGame(player1.Id, player2.Id);
-                    var key = $"{player1.Id}_{player2.Id}";
-
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead class="thead-dark">
                     <tr>
-                        <td>
-                            <select name="Games[@key].Player1Id" class="form-control">
-                                @foreach (var p in Model.Players)
-                                {
-                                    @if (p.Id == game?.Player1Id)
-                                    {
-                                        <option value="@p.Id" selected="selected">@p.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@p.Id">@p.Name</option>
-                                    }
-
-                                }
-                            </select>
-                        </td>
-                        <td>
-                            <select name="Games[@key].Player2Id" class="form-control">
-                                @foreach (var p in Model.Players)
-                                {
-                                    @if (p.Id == game?.Player1Id)
-                                    {
-                                        <option value="@p.Id" selected="selected">@p.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@p.Id">@p.Name</option>
-                                    }
-
-                                }
-                            </select>
-                        </td>
-                        <td>
-                            <input type="number" name="Games[@key].ScorePlayer1" value="@(game?.ScorePlayer1 ?? 0)" min="0" class="form-control" />
-                        </td>
-                        <td>
-                            <input type="number" name="Games[@key].ScorePlayer2" value="@(game?.ScorePlayer2 ?? 0)" min="0" class="form-control" />
-                        </td>
+                        <th>Jogador</th>
+                        @foreach (var col in jogadores)
+                        {
+                            <th>@col.Name</th>
+                        }
+                        <th>Vitórias</th> <!-- Coluna adicional para mostrar vitórias -->
                     </tr>
-                }
-            }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+                    @foreach (var row in jogadores)
+                    {
+                        <tr>
+                            <th class="align-middle">@row.Name</th>
+                            @foreach (var col in jogadores)
+                            {
+                                if (row.Id == col.Id)
+                                {
+                                    <td class="bg-light">–</td>
+                                }
+                                else
+                                {
+                                    var jogo = jogos.FirstOrDefault(g =>
+                                        (g.Player1Id == row.Id && g.Player2Id == col.Id) ||
+                                        (g.Player1Id == col.Id && g.Player2Id == row.Id));
 
-    <button type="submit" class="btn btn-success">Salvar</button>
-</form>
+                                    if (jogo != null)
+                                    {
+                                        var idPart = $"{row.Id}_{col.Id}";
+
+                                        <td class="p-1">
+                                            <div class="d-flex flex-column">
+                                                <input type="hidden" name="Games[@idPart].Player1Id" value="@row.Id" />
+                                                <input type="hidden" name="Games[@idPart].Player2Id" value="@col.Id" />
+                                                <input type="number" name="Games[@idPart].ScorePlayer1" 
+                                                       value="@jogo.ScorePlayer1" 
+                                                       class="form-control form-control-sm mb-1" 
+                                                       min="0" max="3" />
+                                                <input type="number" name="Games[@idPart].ScorePlayer2" 
+                                                       value="@jogo.ScorePlayer2" 
+                                                       class="form-control form-control-sm" 
+                                                       min="0" max="3" />
+                                            </div>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-muted">–</td>
+                                    }
+                                }
+                            }
+                            <td class="align-middle">
+                                @jogos.Count(g => (g.Player1Id == row.Id && g.ScorePlayer1 > g.ScorePlayer2) || 
+                                 (g.Player2Id == row.Id && g.ScorePlayer2 > g.ScorePlayer1))
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success btn-lg">Salvar Alterações</button>
+            <a asp-action="Index" class="btn btn-secondary btn-lg ml-2">Voltar</a>
+        </div>
+    </form>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3 text-center">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+</div>
+
+<style>
+    th {
+        white-space: nowrap;
+        position: sticky;
+        left: 0;
+        background-color: white;
+        z-index: 1;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        max-height: 80vh;
+    }
+    
+    .form-control-sm {
+        max-width: 70px;
+        margin: 0 auto;
+    }
+</style>
