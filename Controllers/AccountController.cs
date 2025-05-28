@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using TorneioTenisMesa.Models;
 using TorneioTenisMesa.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using TorneioTenisMesa.Controllers;
 
 public class AccountController : Controller
@@ -36,33 +37,25 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            // Tentativa de login com as credenciais fornecidas
             var result = await _signInManager.PasswordSignInAsync(
-                model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
+                model.UserName!, model.Password!, model.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
                 _logger.LogInformation("Usuário logado com sucesso.");
+                var user = await _userManager.FindByNameAsync(model.UserName!);
 
-                var user = await _userManager.FindByNameAsync(model.UserName);
                 if (user != null)
                 {
-                    // Verifica a role do usuário e redireciona para a página adequada
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
-                    {
-                        return RedirectToAction("Index", "Admin");  // Redireciona para o Admin
-                    }
+                        return RedirectToAction("Index", "Admin");
                     else if (await _userManager.IsInRoleAsync(user, "Player"))
-                    {
-                        return RedirectToAction("Index", "Player");  // Redireciona para o Player
-                    }
+                        return RedirectToAction("Index", "Player");
                 }
 
-                // Se o usuário não tiver as roles ou outra condição, redireciona para a Home
                 return RedirectToLocal(returnUrl);
             }
 
-            // Verificando se a conta foi bloqueada
             if (result.IsLockedOut)
             {
                 _logger.LogWarning("Conta bloqueada.");
@@ -70,12 +63,10 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // Caso o login falhe sem estar bloqueado
             ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
-            ViewData["ErrorMessage"] = "Usuário ou senha inválidos.";  // Passando a mensagem de erro para a View
+            ViewData["ErrorMessage"] = "Usuário ou senha inválidos.";
         }
 
-        // Se o modelo não for válido, retorna a view com os erros
         return View(model);
     }
 
@@ -89,13 +80,57 @@ public class AccountController : Controller
         return RedirectToAction(nameof(HomeController.Index), "Home");
     }
 
-    // Redireciona para a URL local ou para a Home
     private IActionResult RedirectToLocal(string? returnUrl)
     {
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return Redirect(returnUrl);
+
+        return RedirectToAction(nameof(HomeController.Index), "Home");
+    }
+
+    // GET: /Account/RegisterAdmin
+    [AllowAnonymous]
+    [HttpGet]
+    public IActionResult RegisterAdmin()
+    {
+        return View(new CreateAdminViewModel());
+    }
+
+    // POST: /Account/RegisterAdmin
+    [AllowAnonymous]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RegisterAdmin(CreateAdminViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var existingUser = await _userManager.FindByNameAsync(model.Email);
+        if (existingUser != null)
         {
-            return Redirect(returnUrl);  // Redireciona para a URL local fornecida
+            ModelState.AddModelError("", "Usuário já existe.");
+            return View(model);
         }
-        return RedirectToAction(nameof(HomeController.Index), "Home");  // Caso contrário, vai para a Home
+
+        var newAdmin = new User
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            EmailConfirmed = true
+        };
+
+        var result = await _userManager.CreateAsync(newAdmin, model.Password);
+
+        if (result.Succeeded)
+        {
+            await _userManager.AddToRoleAsync(newAdmin, "Admin");
+            _logger.LogInformation("Admin registrado com sucesso.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        foreach (var error in result.Errors)
+            ModelState.AddModelError("", error.Description);
+
+        return View(model);
     }
 }

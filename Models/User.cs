@@ -11,6 +11,5 @@ namespace TorneioTenisMesa.Models
         [Required]
         public override string? PasswordHash { get; set; }
 
-        public string Role { get; set; } = "Player";
     }
 }

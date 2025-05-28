@@ -1,0 +1,49 @@
+@model List<TorneioTenisMesa.Models.ViewModels.UserWithRoleViewModel>
+
+@{
+    ViewData["Title"] = "Gerenciar Usuários";
+}
+
+<h2 class="text-2xl font-bold text-blue-900 mb-4">Gerenciar Usuários</h2>
+
+<table class="table-auto w-full bg-white shadow-md rounded-lg">
+    <thead class="bg-blue-700 text-white">
+        <tr>
+            <th class="px-4 py-2 text-left">ID</th>
+            <th class="px-4 py-2 text-left">Nome de Usuário</th>
+            <th class="px-4 py-2 text-left">Função (Role)</th>
+            <th class="px-4 py-2 text-center">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr class="border-t hover:bg-gray-100">
+                <td class="px-4 py-2">@user.Id</td>
+                <td class="px-4 py-2">@user.UserName</td>
+                <td class="px-4 py-2">@user.Role</td>
+                <td class="px-4 py-2 text-center">
+                    <div class="flex justify-center gap-2">
+                        <a asp-action="EditUser" asp-route-id="@user.Id"
+                           class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-all duration-200">
+                            ✏️ Editar
+                        </a>
+
+                        <form asp-action="DeleteUser" method="post"
+                              onsubmit="return confirm('Tem certeza que deseja excluir o usuário @user.UserName?');">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit"
+                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-all duration-200">
+                                🗑️ Excluir
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="inline-block mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-all duration-200">
+    ⬅️ Voltar
+</a>

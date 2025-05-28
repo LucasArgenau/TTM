@@ -19,5 +19,8 @@ namespace TorneioTenisMesa.Models.ViewModels
         public string Group { get; set; } = string.Empty;
 
         public DateTime Date { get; set; }
+
+        // Adicione esta propriedade
+        public int TournamentId { get; set; }
     }
 }
