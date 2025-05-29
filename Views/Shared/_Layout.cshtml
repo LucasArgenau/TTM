@@ -27,6 +27,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <button id="darkModeToggle" class="btn nav-link" type="button">
+                                <i class="bi bi-sun-fill"></i>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -45,6 +52,47 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const toggleButton = document.getElementById('darkModeToggle');
+            const sunIcon = 'bi-sun-fill';
+            const moonIcon = 'bi-moon-fill';
+
+            function applyTheme(theme) {
+                if (theme === 'dark') {
+                    body.classList.add('dark-mode');
+                    toggleButton.innerHTML = `<i class="bi ${moonIcon}"></i>`;
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.classList.remove('dark-mode');
+                    toggleButton.innerHTML = `<i class="bi ${sunIcon}"></i>`;
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            // Load saved theme from localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            } else {
+                // Optional: could check for system preference here
+                // For now, default to light if no preference stored
+                applyTheme('light'); 
+            }
+
+            toggleButton.addEventListener('click', function () {
+                const currentTheme = localStorage.getItem('theme') || 'light';
+                if (currentTheme === 'dark') {
+                    applyTheme('light');
+                } else {
+                    applyTheme('dark');
+                }
+            });
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

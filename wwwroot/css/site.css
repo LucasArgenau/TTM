@@ -12,6 +12,33 @@
   --gray-light: #e6ecf2;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --transition: all 0.3s ease;
+
+  /* Dark Mode Variables */
+  --dm-primary: #007bff; /* Um azul mais vibrante para o modo escuro */
+  --dm-primary-dark: #0056b3;
+  --dm-primary-light: #334155; /* Um cinza azulado escuro para fundos claros no modo escuro */
+  --dm-secondary: #ffc107; /* Amarelo um pouco mais claro para contraste */
+  --dm-accent: #ff6b6b; /* Vermelho um pouco mais claro */
+  --dm-success: #4caf50; /* Verde um pouco mais claro */
+  --dm-dark: #e9ecef; /* Texto claro para fundos escuros */
+  --dm-light: #121212; /* Fundo principal escuro */
+  --dm-gray: #adb5bd; /* Cinza claro para texto secundário */
+  --dm-gray-light: #1e1e1e; /* Fundo de elementos como body, um pouco mais claro que o principal */
+  --dm-shadow: 0 4px 12px rgba(255, 255, 255, 0.05); /* Sombra mais sutil para o modo escuro */
+}
+
+.dark-mode {
+  --primary: var(--dm-primary);
+  --primary-dark: var(--dm-primary-dark);
+  --primary-light: var(--dm-primary-light);
+  --secondary: var(--dm-secondary);
+  --accent: var(--dm-accent);
+  --success: var(--dm-success);
+  --dark: var(--dm-dark);
+  --light: var(--dm-light);
+  --gray: var(--dm-gray);
+  --gray-light: var(--dm-gray-light);
+  --shadow: var(--dm-shadow);
 }
 
 /* Reset e estilos base */
@@ -24,8 +51,8 @@
 /* Fonte e plano de fundo geral */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--gray-light);
-  color: var(--dark);
+  background-color: var(--gray-light); /* Será sobrescrito por .dark-mode se aplicado */
+  color: var(--dark); /* Será sobrescrito por .dark-mode se aplicado */
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
@@ -41,12 +68,12 @@ body {
 
 /* Aplicando estilo esportivo à navbar existente */
 .navbar.navbar-light.bg-white {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important; /* Mantém o gradiente original, pode ser ajustado se necessário */
+  box-shadow: var(--shadow); /* Usa a variável de sombra que se adapta ao modo */
 }
 
 .navbar-brand {
-  color: white !important;
+  color: var(--light) !important; /* Ajustado para usar a variável --light que muda no dark mode */
   font-weight: 700;
   font-size: 1.4rem;
   letter-spacing: 0.5px;
@@ -63,7 +90,7 @@ body {
 
 /* Ajustando os links da navbar para o tema esportivo */
 .navbar-light .navbar-nav .nav-link {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.9) !important; /* Mantém branco por padrão devido ao fundo da navbar */
   font-weight: 600;
   padding: 0.5rem 1rem;
   margin: 0 0.2rem;
@@ -73,19 +100,19 @@ body {
 
 .navbar-light .navbar-nav .nav-link:hover,
 .navbar-light .navbar-nav .nav-link.active {
-  color: white !important;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--light) !important; /* Ajustado para usar a variável --light */
+  background-color: rgba(255, 255, 255, 0.1); /* Mantém o realce claro, pode ser ajustado */
   transform: translateY(-2px);
 }
 
 /* Ajustando o toggler para o tema escuro da navbar */
 .navbar-light .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.5);
-  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5); /* Mantém a cor clara do border */
+  background-color: rgba(255, 255, 255, 0.1); /* Mantém o fundo claro */
 }
 
 .navbar-light .navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e"); /* Mantém o ícone branco */
 }
 
 /* Cabeçalhos com estilo esportivo */
@@ -93,7 +120,7 @@ h1,
 h2,
 h3,
 h4 {
-  color: var(--primary-dark);
+  color: var(--primary-dark); /* Será sobrescrito por .dark-mode se aplicado */
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.2;
@@ -103,13 +130,13 @@ h4 {
   font-weight: 800 !important;
   letter-spacing: -0.5px;
   margin-bottom: 1.5rem;
-  color: var(--primary-dark) !important;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+  color: var(--primary-dark) !important; /* Será sobrescrito por .dark-mode se aplicado */
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1); /* A sombra pode precisar de ajuste no dark mode */
 }
 
 /* Parágrafos */
 p {
-  color: var(--dark);
+  color: var(--dark); /* Será sobrescrito por .dark-mode se aplicado */
   margin-bottom: 1rem;
 }
 
@@ -120,12 +147,12 @@ p {
 
 /* Links */
 a {
-  color: var(--primary);
+  color: var(--primary); /* Será sobrescrito por .dark-mode se aplicado */
   transition: var(--transition);
 }
 
 a:hover {
-  color: var(--primary-dark);
+  color: var(--primary-dark); /* Será sobrescrito por .dark-mode se aplicado */
   text-decoration: none;
 }
 
@@ -151,13 +178,17 @@ a:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #0077cc 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Usa variáveis que mudam */
   border: none;
-  color: white;
+  color: var(--light); /* Texto do botão primário, deve ser claro */
+}
+
+.dark-mode .btn-primary {
+  color: #fff; /* Garante que o texto do botão primário seja branco no modo escuro */
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #005bb5 100%);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); /* Inverte o gradiente no hover */
 }
 
 .btn-lg {
@@ -167,12 +198,13 @@ a:hover {
 
 /* Botão sucesso para ações administrativas */
 .btn-success {
-  background: linear-gradient(135deg, #2ecc71 0%, var(--success) 100%);
+  background: linear-gradient(135deg, #2ecc71 0%, var(--success) 100%); /* Usa variáveis que mudam */
   border: none;
+  color: #fff; /* Garante texto branco */
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, var(--success) 0%, #218838 100%);
+  background: linear-gradient(135deg, var(--success) 0%, #218838 100%); /* Ajusta o hover */
 }
 
 /* Imagens com efeitos */
@@ -204,7 +236,7 @@ img:hover {
 
 /* Ajustando o main content */
 main.pb-3 {
-  background-color: white;
+  background-color: var(--light); /* Será var(--dm-light) no dark mode, que é um cinza escuro */
   border-radius: 12px;
   box-shadow: var(--shadow);
   padding: 2rem;
@@ -228,32 +260,47 @@ main.pb-3 {
 }
 
 .card-header {
-  background-color: var(--primary-light);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--primary-light); /* Será mais escuro no dark mode */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* A borda pode precisar de ajuste */
   font-weight: 600;
+  color: var(--primary-dark); /* Cor do texto do cabeçalho do card */
+}
+
+.dark-mode .card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1); /* Borda mais clara para o dark mode */
 }
 
 .card-body {
   padding: 1.5rem;
+  background-color: var(--light); /* Fundo do corpo do card */
+  color: var(--dark); /* Texto do corpo do card */
 }
 
 /* Tabelas para dados de torneios */
 .table {
-  background-color: white;
+  background-color: var(--light); /* Fundo da tabela */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow);
 }
 
 .table thead th {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
+  background-color: var(--primary-light); /* Fundo do cabeçalho da tabela */
+  color: var(--primary-dark); /* Texto do cabeçalho da tabela */
   font-weight: 600;
   border-bottom: 2px solid var(--primary);
 }
 
+.table tbody tr {
+  color: var(--dark); /* Cor do texto das linhas da tabela */
+}
+
 .table tbody tr:hover {
-  background-color: rgba(0, 86, 179, 0.03);
+  background-color: rgba(0, 86, 179, 0.03); /* Cor de hover, pode precisar de ajuste */
+}
+
+.dark-mode .table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* Hover mais claro para dark mode */
 }
 
 /* Footer - adaptado para as classes existentes */
@@ -263,22 +310,22 @@ main.pb-3 {
   width: 100%;
   white-space: nowrap;
   line-height: 60px;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #003366 100%);
-  color: white !important;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #003366 100%); /* Mantém o gradiente original, pode ser ajustado */
+  color: var(--light) !important; /* Ajustado para usar a variável --light que muda no dark mode */
+  box-shadow: var(--shadow); /* Usa a variável de sombra que se adapta ao modo */
 }
 
 .footer.text-muted {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--gray) !important; /* Usa a variável --gray que muda no dark mode */
 }
 
 .footer a {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gray); /* Usa a variável --gray que muda no dark mode */
   transition: var(--transition);
 }
 
 .footer a:hover {
-  color: white;
+  color: var(--light); /* Usa a variável --light que muda no dark mode */
   text-decoration: none;
 }
 
@@ -297,40 +344,53 @@ main.pb-3 {
 }
 
 .alert-info {
-  background-color: #cce5ff;
-  color: #004085;
-  border-left: 4px solid #80bdff;
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border-left: 4px solid var(--primary);
 }
 
 .alert-success {
-  background-color: #d4edda;
-  color: #155724;
-  border-left: 4px solid #c3e6cb;
+  background-color: var(--dm-primary-light); /* Usando uma cor de fundo mais escura para o modo escuro */
+  color: var(--dm-success); /* Cor de texto mais clara */
+  border-left: 4px solid var(--dm-success);
 }
 
+.dark-mode .alert-success {
+    background-color: #1a3a21; /* Exemplo de cor de fundo para alerta de sucesso no modo escuro */
+    color: #a7d7a9; /* Exemplo de cor de texto para alerta de sucesso no modo escuro */
+    border-left-color: #4caf50;
+}
+
+
 .alert-warning {
-  background-color: #fff3cd;
-  color: #856404;
-  border-left: 4px solid #ffeeba;
+  background-color: #33270a;/* Exemplo de cor de fundo para alerta de aviso no modo escuro */
+  color: #ffd06e; /* Exemplo de cor de texto para alerta de aviso no modo escuro */
+  border-left: 4px solid #ffc107;
 }
 
 .alert-danger {
-  background-color: #f8d7da;
-  color: #721c24;
-  border-left: 4px solid #f5c6cb;
+  background-color: #3c171a; /* Exemplo de cor de fundo para alerta de perigo no modo escuro */
+  color: #f1a2a9; /* Exemplo de cor de texto para alerta de perigo no modo escuro */
+  border-left: 4px solid #ff6b6b;
 }
 
 /* Formulários */
 .form-control {
   border-radius: 6px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--gray); /* Usa a variável --gray que muda no dark mode */
   padding: 0.6rem 1rem;
   transition: var(--transition);
+  background-color: var(--light); /* Fundo do input */
+  color: var(--dark); /* Texto do input */
 }
 
 .form-control:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary), 0.25); /* Adapta a cor do box-shadow */
+}
+
+.dark-mode .form-control::placeholder {
+  color: var(--gray);
 }
 
 .form-group {
@@ -340,7 +400,7 @@ main.pb-3 {
 label {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: var(--primary-dark);
+  color: var(--primary-dark); /* Será sobrescrito por .dark-mode se aplicado */
 }
 
 /* Badges para status */
@@ -388,7 +448,7 @@ main > *:nth-child(4) {
 
 /* Estilos específicos para a página inicial */
 .text-center.py-5 {
-  background-color: white;
+  background-color: var(--light); /* Fundo para o modo escuro */
   border-radius: 16px;
   box-shadow: var(--shadow);
   padding: 2rem !important;
@@ -399,23 +459,24 @@ main > *:nth-child(4) {
 /* Estilos para tabelas de classificação e torneios */
 .ranking-table th,
 .tournament-table th {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
+  background-color: var(--primary-light); /* Fundo do cabeçalho da tabela de ranking */
+  color: var(--primary-dark); /* Texto do cabeçalho da tabela de ranking */
 }
 
 .ranking-position {
   font-weight: 700;
   font-size: 1.2rem;
-  color: var(--primary);
+  color: var(--primary); /* Cor da posição no ranking */
 }
 
 /* Estilos para páginas de detalhes de torneio */
 .tournament-header {
-  background: linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--light) 100%); /* Ajusta o gradiente para o modo escuro */
   padding: 2rem;
   border-radius: 12px;
   margin-bottom: 2rem;
   border-left: 5px solid var(--primary);
+  color: var(--dark); /* Cor do texto no cabeçalho do torneio */
 }
 
 .tournament-status {
@@ -424,21 +485,22 @@ main > *:nth-child(4) {
   border-radius: 50px;
   font-weight: 600;
   margin-bottom: 1rem;
+  /* As cores de status precisam ser ajustadas para o modo escuro */
 }
 
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
+.dark-mode .status-active {
+  background-color: var(--dm-success); /* Verde mais escuro ou diferente para dark mode */
+  color: var(--dm-light); /* Texto claro */
 }
 
-.status-completed {
-  background-color: #cce5ff;
-  color: #004085;
+.dark-mode .status-completed {
+  background-color: var(--dm-primary); /* Azul mais escuro ou diferente para dark mode */
+  color: var(--dm-light); /* Texto claro */
 }
 
-.status-upcoming {
-  background-color: #fff3cd;
-  color: #856404;
+.dark-mode .status-upcoming {
+  background-color: var(--dm-secondary); /* Amarelo mais escuro ou diferente para dark mode */
+  color: var(--dm-dark); /* Texto escuro se o fundo for claro, ou vice-versa */
 }
 
 /* Estilos para perfil de jogador */
@@ -447,9 +509,10 @@ main > *:nth-child(4) {
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-  background-color: white;
+  background-color: var(--light); /* Fundo do perfil do jogador */
   border-radius: 12px;
   box-shadow: var(--shadow);
+  color: var(--dark); /* Cor do texto no perfil do jogador */
 }
 
 .player-avatar {
@@ -457,7 +520,7 @@ main > *:nth-child(4) {
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid var(--primary-light);
+  border: 5px solid var(--primary-light); /* Borda do avatar */
   margin-bottom: 1.5rem;
 }
 
@@ -470,21 +533,22 @@ main > *:nth-child(4) {
 }
 
 .stat-card {
-  background-color: var(--primary-light);
+  background-color: var(--primary-light); /* Fundo do card de estatísticas */
   padding: 1rem;
   border-radius: 8px;
   text-align: center;
+  color: var(--dark); /* Cor do texto no card de estatísticas */
 }
 
 .stat-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--primary); /* Cor do valor da estatística */
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: var(--gray);
+  color: var(--gray); /* Cor do rótulo da estatística */
 }
 
 /* Responsividade */
@@ -558,8 +622,8 @@ main > *:nth-child(4) {
 button.accept-policy {
   font-size: 1rem;
   line-height: inherit;
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--primary); /* Cor de fundo do botão de política */
+  color: var(--light); /* Cor do texto do botão de política */
   border: none;
   border-radius: 4px;
   padding: 0.5rem 1rem;
@@ -567,6 +631,111 @@ button.accept-policy {
 }
 
 button.accept-policy:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--primary-dark); /* Cor de fundo do botão de política no hover */
   transform: translateY(-2px);
+}
+
+.dark-mode body {
+  background-color: var(--dm-gray-light); /* Fundo do body no modo escuro */
+  color: var(--dm-dark); /* Cor do texto principal no modo escuro */
+}
+
+.dark-mode main.pb-3 {
+  background-color: var(--dm-light); /* Fundo do conteúdo principal no modo escuro */
+  color: var(--dm-dark); /* Cor do texto no conteúdo principal no modo escuro */
+}
+
+.dark-mode .card {
+  background-color: var(--dm-gray-light); /* Fundo do card no modo escuro */
+  color: var(--dm-dark); /* Cor do texto do card no modo escuro */
+  box-shadow: var(--dm-shadow);
+}
+
+.dark-mode .card-header {
+  background-color: var(--dm-primary-light); /* Fundo do cabeçalho do card no modo escuro */
+  color: var(--dm-dark); /* Cor do texto do cabeçalho do card no modo escuro */
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-mode .table {
+  background-color: var(--dm-gray-light); /* Fundo da tabela no modo escuro */
+  color: var(--dm-dark); /* Cor do texto da tabela no modo escuro */
+  box-shadow: var(--dm-shadow);
+}
+
+.dark-mode .table thead th {
+  background-color: var(--dm-primary-light); /* Fundo do cabeçalho da tabela no modo escuro */
+  color: var(--dm-dark); /* Cor do texto do cabeçalho da tabela no modo escuro */
+  border-bottom-color: var(--dm-primary);
+}
+
+.dark-mode .table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.07); /* Hover da linha da tabela no modo escuro */
+}
+
+.dark-mode .form-control {
+  background-color: var(--dm-gray-light); /* Fundo do input no modo escuro */
+  color: var(--dm-dark); /* Cor do texto do input no modo escuro */
+  border-color: var(--dm-gray); /* Cor da borda do input no modo escuro */
+}
+
+.dark-mode .form-control:focus {
+  border-color: var(--dm-primary);
+  box-shadow: 0 0 0 0.2rem rgba(var(--dm-primary), 0.25); /* Sombra do foco do input no modo escuro */
+}
+
+.dark-mode label {
+  color: var(--dm-primary-dark); /* Cor do label no modo escuro */
+}
+
+.dark-mode h1,
+.dark-mode h2,
+.dark-mode h3,
+.dark-mode h4 {
+  color: var(--dm-primary-dark); /* Cor dos cabeçalhos no modo escuro */
+}
+
+.dark-mode .display-4 {
+  color: var(--dm-primary-dark) !important; /* Cor do display-4 no modo escuro */
+}
+
+.dark-mode .text-primary {
+  color: var(--dm-primary) !important;
+}
+
+.dark-mode .text-secondary {
+  color: var(--dm-gray) !important;
+}
+
+.dark-mode .navbar-brand {
+  color: #fff !important; /* Navbar brand color in dark mode */
+}
+
+.dark-mode .navbar-light .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.dark-mode .navbar-light .navbar-nav .nav-link:hover,
+.dark-mode .navbar-light .navbar-nav .nav-link.active {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+/* Specific dark mode adjustments for footer if needed */
+.dark-mode .footer {
+    background: linear-gradient(135deg, var(--dm-primary-dark) 0%, #002244 100%); /* Darker gradient for footer */
+    color: var(--dm-dark) !important;
+}
+
+.dark-mode .footer a {
+    color: var(--dm-gray);
+}
+
+.dark-mode .footer a:hover {
+    color: var(--dm-dark);
+}
+
+.dark-mode .alert-info {
+  background-color: #0d2c54; 
+  color: #abc9ff; 
+  border-left-color: var(--dm-primary);
 }
