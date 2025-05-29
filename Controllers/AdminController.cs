@@ -267,162 +267,109 @@ public class AdminController : Controller
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var existingPlayers = await _context.Players
-                    .Include(p => p.User)
-                    .ToListAsync(); // Consider moving this query if it's too heavy before knowing if playersFromCsv has items
+                var playersToLinkToTournament = new List<Player>();
 
-                var tournamentPlayers = await _context.TournamentPlayers
-                    .Where(tp => tp.TournamentId == tournament.Id)
-                    .ToListAsync();
-
-                var newPlayersToAdd = new List<Player>();
-                var tournamentPlayersToProcess = new List<TournamentPlayer>(); // Renamed to avoid confusion
-
-                foreach (var playerFromCsv in playersFromCsv) // Iterate over successfully parsed players
+                foreach (var playerFromCsv in playersFromCsv)
                 {
-                    var existingPlayer = existingPlayers.FirstOrDefault(p => p.RatingsCentralId == playerFromCsv.RatingsCentralId);
+                    var existingDbPlayer = await _context.Players
+                                                     .Include(p => p.User)
+                                                     .FirstOrDefaultAsync(p => p.RatingsCentralId == playerFromCsv.RatingsCentralId);
 
-                    if (existingPlayer == null)
+                    if (existingDbPlayer != null)
                     {
-                        // This player (and its user) was created by ParseCsv and added to playersFromCsv list.
-                        // The User object should already be part of playerFromCsv.User
-                        newPlayersToAdd.Add(playerFromCsv);
-                        // Will be linked to tournament later
+                        // Update existing player's details
+                        existingDbPlayer.Name = playerFromCsv.Name;
+                        existingDbPlayer.Group = playerFromCsv.Group;
+                        existingDbPlayer.Rating = playerFromCsv.Rating;
+                        existingDbPlayer.StDev = playerFromCsv.StDev;
+                        // User association: existingDbPlayer.User is already loaded. 
+                        // playerFromCsv.User was determined by ParseCsv. If existingDbPlayer.User.UserName 
+                        // is different from playerFromCsv.User.UserName, it implies a potential change 
+                        // in user association, which is complex and not explicitly handled here.
+                        // For now, we assume the RCID is the primary key for a player, and its user association is stable.
+                        playersToLinkToTournament.Add(existingDbPlayer);
                     }
                     else
                     {
-                        // Atualizar dados do jogador existente
-                        existingPlayer.Name = playerFromCsv.Name;
-                        existingPlayer.Group = playerFromCsv.Group;
-                        existingPlayer.Rating = playerFromCsv.Rating;
-                        existingPlayer.StDev = playerFromCsv.StDev;
-                        // User for existingPlayer is already in DB.
-
-                        // Verifica se já está vinculado ao torneio
-                        bool isLinked = tournamentPlayers.Any(tp => tp.PlayerId == existingPlayer.Id);
-                        if (!isLinked)
-                        {
-                            tournamentPlayersToProcess.Add(new TournamentPlayer
-                            {
-                                PlayerId = existingPlayer.Id,
-                                TournamentId = tournament.Id
-                            });
-                        }
+                        // playerFromCsv is a new player. Its User property is already set by ParseCsv.
+                        // If playerFromCsv.User is new (not tracked by UserManager yet, or tracked but new to DB context), 
+                        // EF Core will also add it due to the relationship when _context.Players.AddAsync(playerFromCsv) is called.
+                        // If playerFromCsv.User is an existing user (tracked by UserManager and possibly by DB context),
+                        // EF Core will correctly associate it.
+                        await _context.Players.AddAsync(playerFromCsv); // EF Core tracks playerFromCsv and its related User.
+                        playersToLinkToTournament.Add(playerFromCsv);
                     }
                 }
 
-                // Add new players to context
-                if (newPlayersToAdd.Any())
-                {
-                    await _context.Players.AddRangeAsync(newPlayersToAdd);
-                    // Users associated with newPlayersToAdd are also added due to relationship
-                }
-
-                // After potential new players are added (or existing ones updated), save changes to get their IDs
-                // This is necessary if new player IDs are needed for TournamentPlayer or Game entities *before* final commit.
-                // However, EF Core can handle related entities being added in one go.
-                // Let's try to consolidate SaveChangesAsync to be called only once.
-
-                // Link new players to the tournament
-                foreach (var newPlayer in newPlayersToAdd)
-                {
-                    // Need to ensure PlayerId is available if SaveChangesAsync hasn't been called.
-                    // EF Core *should* handle this if newPlayer is tracked.
-                    tournamentPlayersToProcess.Add(new TournamentPlayer
-                    {
-                        Player = newPlayer, // Link by object, EF Core will get ID
-                        TournamentId = tournament.Id
-                    });
-                }
-                
-                if (tournamentPlayersToProcess.Any())
-                {
-                    await _context.TournamentPlayers.AddRangeAsync(tournamentPlayersToProcess);
-                }
-
-                // Regenerate or fetch the list of players now part of the tournament for game generation
-                // This needs to include both newly added and existing players now linked.
-
-                // To get *all* players for game generation (newly added and existing ones linked in this import)
-                // we might need to query after the above additions are tracked by EF Core.
-                // For simplicity, if newPlayersToAdd are tracked, their IDs become available.
-                // And existing players already have IDs.
-
-                var allPlayersForGamesInTournament = new List<Player>();
-                
-                // Add newly added players that are now linked
-                foreach(var tp in tournamentPlayersToProcess.Where(tp => newPlayersToAdd.Contains(tp.Player!)))
-                {
-                    if(tp.Player != null) allPlayersForGamesInTournament.Add(tp.Player);
-                }
-
-                // Add existing players that were newly linked
-                foreach(var tp in tournamentPlayersToProcess.Where(tp => !newPlayersToAdd.Contains(tp.Player!)))
-                {
-                     var player = existingPlayers.First(p => p.Id == tp.PlayerId); // Should exist
-                     if(player != null) allPlayersForGamesInTournament.Add(player);
-                }
-                
-                // Also add players already in the tournament but not processed by this CSV (if any, though current logic implies all CSV players are processed)
-                // The original logic for savedPlayers was:
-                // var savedPlayers = await _context.TournamentPlayers.Include(tp => tp.Player).Where(tp => tp.TournamentId == tournament.Id).Select(tp => tp.Player).ToListAsync();
-                // This query should be run *after* all TournamentPlayer links for the current import are established and *before* game generation.
-                // For now, let's assume `allPlayersForGamesInTournament` correctly collects players for game generation based on current processing.
-                // A more robust way would be to query TournamentPlayers for this tournamentId *after* AddRangeAsync for TournamentPlayers.
-
-                // For game generation, we need all players that *will be* in the tournament after this transaction.
-                // This includes:
-                // 1. New players added AND linked.
-                // 2. Existing players, now (possibly newly) linked.
-                // 3. Existing players already linked (not touched by CSV but part of the tournament).
-
-                // To simplify, let's first save Players and TournamentPlayers to ensure IDs are set and relationships are queryable.
-                // Then query for all players in the tournament to generate games. This might mean two SaveChangesAsync calls within transaction or careful EF tracking.
-                // The goal is a *single* SaveChangesAsync.
-
-                // Let's adjust:
-                // 1. Add new players to context.
-                // 2. Add new TournamentPlayer links to context.
-                // 3. All these entities are now tracked. EF Core should resolve their IDs and relationships upon the single SaveChangesAsync.
-
-                // Game generation logic:
-                // We need a list of *all* Player objects that are supposed to be in this tournament.
-                // This includes players in `newPlayersToAdd` (who will be linked via `tournamentPlayersToProcess`)
-                // and existing players who might be newly linked via `tournamentPlayersToProcess` or were already linked.
-
-                // Let's fetch all players that will be in the tournament *after* current operations are saved.
-                // This is tricky without calling SaveChanges.
-                // Alternative: Construct the list of players for games from playersFromCsv and existing linked players.
-
-                List<Player> playersForGameGeneration = new List<Player>();
-                playersForGameGeneration.AddRange(newPlayersToAdd); // These are new and will be in the tournament.
-                
-                var existingPlayersInTournamentPreviously = await _context.TournamentPlayers
+                // --- TournamentPlayer linking logic ---
+                var tournamentPlayersToAdd = new List<TournamentPlayer>();
+                var currentTournamentPlayerLinks = await _context.TournamentPlayers
                     .Where(tp => tp.TournamentId == tournament.Id)
-                    .Select(tp => tp.Player)
                     .ToListAsync();
-                
-                foreach (var playerCsv in playersFromCsv)
+
+                foreach (var playerToLink in playersToLinkToTournament)
                 {
-                    var existingPlayer = existingPlayers.FirstOrDefault(p => p.RatingsCentralId == playerCsv.RatingsCentralId);
-                    if (existingPlayer != null) // If it's an existing player processed from CSV
+                    bool isAlreadyLinked;
+                    if (playerToLink.Id == 0) // New player, not yet saved to DB
                     {
-                        if (!playersForGameGeneration.Any(p=> p.Id == existingPlayer.Id)) // Ensure not added twice
+                        isAlreadyLinked = false;
+                    }
+                    else // Existing player, check if linked by Id
+                    {
+                        isAlreadyLinked = currentTournamentPlayerLinks.Any(tp => tp.PlayerId == playerToLink.Id);
+                    }
+
+                    if (!isAlreadyLinked)
+                    {
+                        tournamentPlayersToAdd.Add(new TournamentPlayer
                         {
-                             playersForGameGeneration.Add(existingPlayer);
-                        }
+                            Player = playerToLink, // Link by object reference, EF handles ID.
+                            TournamentId = tournament.Id
+                        });
                     }
                 }
-                // Add players who were already in the tournament and not in the CSV (if any, depends on desired logic)
-                // For now, assuming games are only between players processed or existing in CSV.
-                // The original logic for `savedPlayers` would be better if run after TP links are made.
-                // Given the single SaveChangesAsync goal, we'll use the players we know are being actively processed or added.
-                // This might miss games if some tournament players are not in the CSV.
-                // Re-evaluating: The original `savedPlayers` query after all TP links are made (but before SaveChanges) might be fine if EF tracks them.
 
-                // Let's clear and rebuild games list
-                var games = new List<Game>();
-                var groups = playersForGameGeneration.Where(p => p != null).GroupBy(p => p.Group);
+                if (tournamentPlayersToAdd.Any())
+                {
+                    await _context.TournamentPlayers.AddRangeAsync(tournamentPlayersToAdd);
+                }
+
+                // --- Game generation logic ---
+                // 1. Clear existing games for the tournament.
+                var oldGames = await _context.Games.Where(g => g.TournamentId == tournament.Id).ToListAsync();
+                if (oldGames.Any())
+                {
+                    _context.Games.RemoveRange(oldGames);
+                }
+
+                // 2. Construct the list of all players for game generation.
+                // This includes players processed from CSV AND players already in the tournament but not in this CSV.
+                var allPlayersForGames = new List<Player>();
+
+                // Add players processed from CSV (they are now tracked by EF context, new ones will get Ids on SaveChanges)
+                // Ensure they are distinct by RatingsCentralId as playerToLink could have duplicates if logic error elsewhere.
+                foreach(var pLinked in playersToLinkToTournament.Where(p => p != null).DistinctBy(p => p.RatingsCentralId))
+                {
+                    allPlayersForGames.Add(pLinked);
+                }
+                
+                // Add players already in the tournament (via TournamentPlayers) but NOT in the current CSV batch.
+                var existingPlayersInDbForTournament = await _context.TournamentPlayers
+                    .Where(tp => tp.TournamentId == tournament.Id && !playersToLinkToTournament.Any(pCsv => pCsv.Id != 0 && pCsv.Id == tp.PlayerId))
+                    .Select(tp => tp.Player) // Make sure Player navigation property is loaded
+                    .ToListAsync();
+
+                foreach (var existingPlayerInTournament in existingPlayersInDbForTournament)
+                {
+                    if (existingPlayerInTournament != null && !allPlayersForGames.Any(p => p.RatingsCentralId == existingPlayerInTournament.RatingsCentralId))
+                    {
+                        allPlayersForGames.Add(existingPlayerInTournament);
+                    }
+                }
+                
+                // 3. Generate new games
+                var newGames = new List<Game>();
+                var groups = allPlayersForGames.Where(p => p != null).GroupBy(p => p.Group);
 
                 foreach (var group in groups)
                 {
@@ -431,24 +378,26 @@ public class AdminController : Controller
                     {
                         for (int j = i + 1; j < groupPlayers.Count; j++)
                         {
-                            games.Add(new Game
+                            // Ensure Player1 and Player2 are tracked entities if they are new.
+                            // Linking by object (Player1 = groupPlayers[i]) is correct.
+                            newGames.Add(new Game
                             {
-                                Player1 = groupPlayers[i], // Link by object
-                                Player2 = groupPlayers[j], // Link by object
+                                Player1 = groupPlayers[i],
+                                Player2 = groupPlayers[j],
                                 TournamentId = tournament.Id,
                                 Group = group.Key,
-                                Date = DateTime.Now 
+                                Date = DateTime.Now // Or tournament.StartDate
                             });
                         }
                     }
                 }
 
-                if (games.Any())
+                if (newGames.Any())
                 {
-                    await _context.Games.AddRangeAsync(games);
+                    await _context.Games.AddRangeAsync(newGames);
                 }
 
-                await _context.SaveChangesAsync(); // Single save for all changes
+                await _context.SaveChangesAsync(); // Single save for all changes (Users, Players, TournamentPlayers, Games)
                 await transaction.CommitAsync();
 
                 TempData["SuccessMessage"] = "Jogadores importados e confrontos criados com sucesso!";
@@ -556,56 +505,57 @@ public class AdminController : Controller
 
                 var userName = $"player{ratingsCentralId}";
                 var userEmail = $"player{ratingsCentralId}@example.com"; // Placeholder email
-                var plainPassword = GenerateRandomPassword(8);
+            var userName = $"player{ratingsCentralId}";
+            User user = await _userManager.FindByNameAsync(userName);
+            bool userExisted = user != null;
 
-                var user = new User
+            if (!userExisted)
+                {
+                var userEmail = $"player{ratingsCentralId}@example.com"; // Placeholder email
+                var plainPassword = GenerateRandomPassword(8);
+                user = new User
                 {
                     UserName = userName,
                     Email = userEmail,
                     EmailConfirmed = true // Avoid email confirmation for auto-generated accounts
                 };
 
-                var result = await _userManager.CreateAsync(user, plainPassword);
+                var createUserResult = await _userManager.CreateAsync(user, plainPassword);
 
-                if (result.Succeeded)
-                {
-                    // User created, now assign "Player" role
-                    var roleResult = await _userManager.AddToRoleAsync(user, "Player");
-                    if (roleResult.Succeeded)
+                if (createUserResult.Succeeded)
                     {
-                        var player = new Player
+                    var addToRoleResult = await _userManager.AddToRoleAsync(user, "Player");
+                    if (!addToRoleResult.Succeeded)
                         {
-                            Name = values[3],
-                            RatingsCentralId = ratingsCentralId,
-                            Rating = rating,
-                            StDev = stDev,
-                            Group = values[7],
-                            User = user // Or UserId = user.Id
-                        };
-                        players.Add(player);
-                        newUserCredentials.Add(userName, plainPassword); // Store credentials
+                        foreach (var error in addToRoleResult.Errors)
+                        {
+                            importErrors.Add($"Linha {lineNumber}: Erro ao atribuir role 'Player' ao novo usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
+                        }
+                        // Consider deleting user: await _userManager.DeleteAsync(user);
+                        continue; // Skip this player
+                    }
+                    newUserCredentials.Add(userName, plainPassword); // Store credentials only for new users
                     }
                     else
                     {
-                        // Role assignment failed
-                        foreach (var error in roleResult.Errors)
+                    foreach (var error in createUserResult.Errors)
                         {
-                            importErrors.Add($"Erro ao atribuir role 'Player' ao usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
+                        importErrors.Add($"Linha {lineNumber}: Erro ao criar usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
                         }
-                        // Optional: Delete the created user if role assignment fails and it's critical.
-                        // await _userManager.DeleteAsync(user); // Requires careful consideration of overall flow.
-                        // For now, adding to importErrors will prevent the whole batch from committing due to logic in ImportCsv.
+                    continue; // Skip this player
                     }
                 }
-                else
+            // If user existed or was successfully created and role assigned:
+            var player = new Player
                 {
-                    // User creation failed
-                    foreach (var error in result.Errors)
-                    {
-                        importErrors.Add($"Erro ao criar usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
-                    }
-                    // Player is not added if user creation fails
-                }
+                Name = values[3], // Assuming column index 3 is Name
+                RatingsCentralId = ratingsCentralId,
+                Rating = rating,
+                StDev = stDev,
+                Group = values[7], // Assuming column index 7 is Group
+                User = user
+            };
+            players.Add(player);
             }
         }
 
