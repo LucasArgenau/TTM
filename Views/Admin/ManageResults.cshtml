@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Gerenciar Resultados";
+    var newUserCredentials = TempData["NewUserCredentials"] as Dictionary<string, string>;
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -10,6 +11,31 @@
 {
     <div class="alert alert-success">
         @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (newUserCredentials != null && newUserCredentials.Any())
+{
+    <div class="alert alert-info mt-4">
+        <h4>Credenciais de Novos Usuários Criados:</h4>
+        <p><strong>Atenção:</strong> Anote estas senhas. Elas não serão exibidas novamente.</p>
+        <table class="table table-bordered table-sm" style="width: auto;">
+            <thead>
+                <tr>
+                    <th>Usuário (UserName)</th>
+                    <th>Senha Temporária</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var credential in newUserCredentials)
+                {
+                    <tr>
+                        <td>@credential.Key</td>
+                        <td>@credential.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }
 
