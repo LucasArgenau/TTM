@@ -458,6 +458,7 @@ public class AdminController : Controller
             {
                 await transaction.RollbackAsync();
                 ModelState.AddModelError("", $"Ocorreu um erro ao salvar os dados no banco de dados: {ex.Message}. Todas as alterações foram revertidas.");
+                return View(model);
             }
         }
         catch (Exception ex) // Catch for issues before transaction (e.g., reading CSV file itself)
