@@ -722,13 +722,13 @@ public class AdminController : Controller
 
     private string GenerateRandomPassword(int length)
     {
-        if (length < 3) // Minimum length to include one of each required type
-            throw new ArgumentOutOfRangeException(nameof(length), "Password length must be at least 3 to meet complexity requirements.");
+        if (length < 4) // Minimum length to include one of each of the four required types
+            throw new ArgumentOutOfRangeException(nameof(length), "Password length must be at least 4 to meet complexity requirements (lower, upper, digit, special).");
 
         const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
         const string upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const string digitChars = "0123456789";
-        const string specialChars = "!@#$%^&*()_-+={[}]|:;<,>.?"; // Explicitly define special chars
+        const string specialChars = "!@#$%^&*()_-+={[}]|:;<,>.?";
         const string allValidChars = lowerChars + upperChars + digitChars + specialChars;
 
         var passwordChars = new List<char>(length);
@@ -739,10 +739,11 @@ public class AdminController : Controller
             passwordChars.Add(GetRandomChar(lowerChars, rng));
             passwordChars.Add(GetRandomChar(upperChars, rng));
             passwordChars.Add(GetRandomChar(digitChars, rng));
+            passwordChars.Add(GetRandomChar(specialChars, rng)); // Ensure a special character
 
             // 2. Add remaining characters from the full set of valid characters
-            // If length is exactly 3, this loop won't run, which is correct.
-            for (int i = 3; i < length; i++)
+            // If length is exactly 4, this loop won't run, which is correct.
+            for (int i = 4; i < length; i++)
             {
                 passwordChars.Add(GetRandomChar(allValidChars, rng));
             }
