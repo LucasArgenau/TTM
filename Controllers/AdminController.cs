@@ -249,17 +249,17 @@ public class AdminController : Controller
                 return View(model);
             }
 
-            if (parseResult.NewUserCredentials.Any())
-            {
-                TempData["NewUserCredentials"] = parseResult.NewUserCredentials;
-            }
+            // if (parseResult.NewUserCredentials.Any()) // Old TempData storage
+            // {
+            //     TempData["NewUserCredentials"] = parseResult.NewUserCredentials;
+            // }
 
             // Carregar Players existentes do torneio em memória para evitar várias consultas
             // This part will be inside the transaction or adjusted if playersFromCsv is empty.
 
-            if (!playersFromCsv.Any() && !parseResult.NewUserCredentials.Any()) // Check if there's nothing to process
+            if (!playersFromCsv.Any()) // Simplified check: if no players parsed, it implies no new users from CSV either.
             {
-                 // If no players were parsed and no new users to create (even if no import errors explicitly, maybe empty file)
+                 // If no players were parsed (even if no import errors explicitly, maybe empty file or only errors)
                 TempData["SuccessMessage"] = "Nenhum jogador processado do arquivo CSV. Nenhuma alteração feita.";
                 return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
             }
@@ -267,6 +267,9 @@ public class AdminController : Controller
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                // The tournament variable is already fetched at the beginning of the action method.
+                // var tournament = await _context.Tournaments.FindAsync(model.TournamentId); (already done)
+
                 var playersToLinkToTournament = new List<Player>();
 
                 foreach (var playerFromCsv in playersFromCsv)
@@ -282,9 +285,9 @@ public class AdminController : Controller
                         existingDbPlayer.Group = playerFromCsv.Group;
                         existingDbPlayer.Rating = playerFromCsv.Rating;
                         existingDbPlayer.StDev = playerFromCsv.StDev;
-                        // User association: existingDbPlayer.User is already loaded. 
-                        // playerFromCsv.User was determined by ParseCsv. If existingDbPlayer.User.UserName 
-                        // is different from playerFromCsv.User.UserName, it implies a potential change 
+                        // User association: existingDbPlayer.User is already loaded.
+                        // playerFromCsv.User was determined by ParseCsv. If existingDbPlayer.User.UserName
+                        // is different from playerFromCsv.User.UserName, it implies a potential change
                         // in user association, which is complex and not explicitly handled here.
                         // For now, we assume the RCID is the primary key for a player, and its user association is stable.
                         playersToLinkToTournament.Add(existingDbPlayer);
@@ -292,7 +295,7 @@ public class AdminController : Controller
                     else
                     {
                         // playerFromCsv is a new player. Its User property is already set by ParseCsv.
-                        // If playerFromCsv.User is new (not tracked by UserManager yet, or tracked but new to DB context), 
+                        // If playerFromCsv.User is new (not tracked by UserManager yet, or tracked but new to DB context),
                         // EF Core will also add it due to the relationship when _context.Players.AddAsync(playerFromCsv) is called.
                         // If playerFromCsv.User is an existing user (tracked by UserManager and possibly by DB context),
                         // EF Core will correctly associate it.
@@ -372,7 +375,7 @@ public class AdminController : Controller
                         allPlayersForGames.Add(existingPlayerInTournament);
                     }
                 }
-                
+
                 // 3. Generate new games
                 var newGames = new List<Game>();
                 var groups = allPlayersForGames.Where(p => p != null).GroupBy(p => p.Group);
@@ -406,8 +409,25 @@ public class AdminController : Controller
                 await _context.SaveChangesAsync(); // Single save for all changes (Users, Players, TournamentPlayers, Games)
                 await transaction.CommitAsync();
 
-                TempData["SuccessMessage"] = "Jogadores importados e confrontos criados com sucesso!";
-                return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
+                // Check if new users were created to decide the next step
+                if (parseResult.NewUserCredentials.Any())
+                {
+                    var credentialsViewModel = new NewUserCredentialsViewModel
+                    {
+                        TournamentId = tournament.Id,
+                        TournamentName = tournament.Name,
+                        NewUsers = parseResult.NewUserCredentials
+                            .Select(kvp => new NewUserCredentialItem { UserName = kvp.Key, Password = kvp.Value })
+                            .ToList()
+                    };
+                    TempData["SuccessMessage"] = "Jogadores importados com sucesso! As credenciais dos novos usuários estão listadas abaixo.";
+                    return View("DisplayNewUserCredentials", credentialsViewModel);
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Jogadores importados/atualizados e confrontos gerados com sucesso. Nenhum novo usuário foi criado.";
+                    return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
+                }
             }
             catch (Exception ex)
             {
@@ -461,6 +481,46 @@ public class AdminController : Controller
         await _context.SaveChangesAsync();
 
         return RedirectToAction("ManageResults", new { tournamentId = tournamentId });
+    }
+
+    public async Task<JsonResult> GetOpponents(int tournamentId, int player1Id, int? groupId, string? gameStatus)
+    {
+        var gamesQuery = _context.Games
+            .Where(g => g.TournamentId == tournamentId && (g.Player1Id == player1Id || g.Player2Id == player1Id))
+            .Include(g => g.Player1)
+            .Include(g => g.Player2);
+
+        // Apply Group Filter
+        if (groupId.HasValue && groupId > 0) // Assuming group IDs are positive integers if they are IDs
+        {
+            // If Game.Group is string and groupId is an int representing the group number (e.g. 1, 2, 3)
+            // then it should be compared as string.
+            gamesQuery = gamesQuery.Where(g => g.Group == groupId.ToString());
+        }
+
+        // Apply Game Status Filter
+        string effectiveGameStatus = string.IsNullOrEmpty(gameStatus) ? "All" : gameStatus;
+
+        if (effectiveGameStatus == "WithResults")
+        {
+            gamesQuery = gamesQuery.Where(g => g.ScorePlayer1 != 0 || g.ScorePlayer2 != 0);
+        }
+        else if (effectiveGameStatus == "WithoutResults")
+        {
+            gamesQuery = gamesQuery.Where(g => g.ScorePlayer1 == 0 && g.ScorePlayer2 == 0);
+        }
+
+        var relevantGames = await gamesQuery.ToListAsync();
+
+        var opponents = relevantGames
+            .Select(g => g.Player1Id == player1Id ? g.Player2 : g.Player1)
+            .Where(p => p != null && p.Id != player1Id) // Ensure opponent is not null and not player1 themselves
+            .DistinctBy(p => p!.Id) // p cannot be null here due to the Where clause
+            .OrderBy(p => p!.Name)   // p cannot be null here
+            .Select(p => new { id = p!.Id, name = p!.Name }) // p cannot be null here
+            .ToList();
+
+        return Json(opponents);
     }
 
     private async Task<CsvParseResult> ParseCsv(IFormFile csvFile)
@@ -641,36 +701,104 @@ public class AdminController : Controller
         TempData["SuccessMessage"] = "Resultados atualizados com sucesso!";
         return RedirectToAction(nameof(ManageResults));
     }
+using Microsoft.AspNetCore.Mvc.Rendering; // Added for SelectListItem
+
     [HttpGet]
-    public IActionResult ManageResults(int tournamentId)
+    public async Task<IActionResult> ManageResults(int tournamentId, int? groupId, string? gameStatus)
     {
-        try
+        var tournament = await _context.Tournaments.FindAsync(tournamentId);
+        if (tournament == null)
         {
-            var games = _context.Games
-                .Where(g => g.TournamentId == tournamentId)
-                .Include(g => g.Player1)
-                .Include(g => g.Player2)
-                .ToList();
+            return NotFound();
+        }
 
-            var model = games.Select(g => new GameResultViewModel
+        var viewModel = new ManageResultsViewModel
+        {
+            TournamentId = tournament.Id,
+            TournamentName = tournament.Name
+        };
+
+        var gamesQuery = _context.Games
+            .Where(g => g.TournamentId == tournamentId)
+            .Include(g => g.Player1)
+            .Include(g => g.Player2)
+            .OrderBy(g => g.Date)
+            .ThenBy(g => g.Group); // Base query
+
+        // Apply Group Filter
+        if (groupId.HasValue && groupId > 0) // Assuming 0 or less is not a valid group ID for filtering
+        {
+            // Game.Group is string, so convert groupId to string for comparison
+            gamesQuery = gamesQuery.Where(g => g.Group == groupId.ToString());
+        }
+        viewModel.SelectedGroupId = groupId;
+
+        // Apply Game Status Filter
+        string effectiveGameStatus = string.IsNullOrEmpty(gameStatus) ? "All" : gameStatus;
+        viewModel.SelectedGameStatus = effectiveGameStatus;
+
+        if (effectiveGameStatus == "WithResults")
+        {
+            gamesQuery = gamesQuery.Where(g => g.ScorePlayer1 != 0 || g.ScorePlayer2 != 0);
+        }
+        else if (effectiveGameStatus == "WithoutResults")
+        {
+            gamesQuery = gamesQuery.Where(g => g.ScorePlayer1 == 0 && g.ScorePlayer2 == 0);
+        }
+
+        var filteredGames = await gamesQuery.ToListAsync();
+
+        viewModel.Games = filteredGames.Select(g => new GameResultViewModel
+        {
+            GameId = g.Id,
+            Player1Name = g.Player1?.Name ?? "N/A",
+            Player2Name = g.Player2?.Name ?? "N/A",
+            ScorePlayer1 = g.ScorePlayer1,
+            ScorePlayer2 = g.ScorePlayer2,
+            Group = g.Group!,
+            Date = g.Date,
+            TournamentId = g.TournamentId
+        }).ToList();
+
+        // Populate Filter Data Sources
+        // GroupFilterItems - based on all games of the tournament before group filtering
+        var allTournamentGamesForFilters = await _context.Games.Where(g => g.TournamentId == tournamentId).ToListAsync();
+        var distinctGroups = allTournamentGamesForFilters
+            .Select(g => g.Group)
+            .Distinct()
+            .OrderBy(gn => gn)
+            .ToList();
+
+        viewModel.GroupFilterItems.Add(new SelectListItem("Todos os Grupos", "", !groupId.HasValue)); // Value is empty for "All"
+        foreach (var grp in distinctGroups)
+        {
+            if (!string.IsNullOrEmpty(grp)) // Ensure group is not null or empty string
             {
-                GameId = g.Id,
-                Player1Name = g.Player1?.Name ?? "N/A",
-                Player2Name = g.Player2?.Name ?? "N/A",
-                ScorePlayer1 = g.ScorePlayer1,
-                ScorePlayer2 = g.ScorePlayer2,
-                Group = g.Group!,
-                Date = g.Date
-            }).ToList();
+                 // Assuming groupId parameter corresponds to the string value of the group directly
+                viewModel.GroupFilterItems.Add(new SelectListItem($"Grupo {grp}", grp, grp == groupId?.ToString()));
+            }
+        }
 
-            return View(model);
-        }
-        catch (Exception ex)
+        // GameStatusFilterItems
+        viewModel.GameStatusFilterItems.Add(new SelectListItem("Todos", "All", effectiveGameStatus == "All"));
+        viewModel.GameStatusFilterItems.Add(new SelectListItem("Com Resultados", "WithResults", effectiveGameStatus == "WithResults"));
+        viewModel.GameStatusFilterItems.Add(new SelectListItem("Sem Resultados", "WithoutResults", effectiveGameStatus == "WithoutResults"));
+
+        // Player1FilterItems - based on players in the currently filtered games
+        var player1s = filteredGames.Select(g => g.Player1).Where(p => p != null);
+        var player2s = filteredGames.Select(g => g.Player2).Where(p => p != null);
+        var distinctPlayersForDropdown = player1s.Concat(player2s)
+                                     .DistinctBy(p => p!.Id) // p cannot be null due to .Where(p => p != null)
+                                     .OrderBy(p => p!.Name)
+                                     .ToList();
+
+        viewModel.Player1FilterItems.Add(new SelectListItem("Selecione Jogador 1", "", true)); // Default empty
+        foreach (var player in distinctPlayersForDropdown)
         {
-            // Log error
-            TempData["ErrorMessage"] = $"Erro ao carregar resultados: {ex.Message}";
-            return RedirectToAction("Index");
+            viewModel.Player1FilterItems.Add(new SelectListItem(player!.Name, player.Id.ToString()));
         }
+
+        return View(viewModel);
     }
 
     [HttpPost]
@@ -707,7 +835,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrEmpty(charSet))
             throw new ArgumentException("Character set cannot be null or empty", nameof(charSet));
-        
+
         var byteBuffer = new byte[sizeof(uint)];
         rng.GetBytes(byteBuffer);
         uint num = BitConverter.ToUInt32(byteBuffer, 0);
@@ -738,7 +866,7 @@ public class AdminController : Controller
         const string allValidChars = lowerChars + upperChars + digitChars + specialChars;
 
         var passwordChars = new List<char>(length);
-        
+
         using (var rng = RandomNumberGenerator.Create())
         {
             // 1. Add one of each required character type
@@ -799,7 +927,7 @@ public class AdminController : Controller
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(int id, [Bind("Id,UserName")] User userFromForm)
         {
-            if (id != userFromForm.Id) 
+            if (id != userFromForm.Id)
             {
                 return NotFound();
             }
@@ -810,12 +938,12 @@ public class AdminController : Controller
                 return NotFound();
             }
 
-            string newProposedEmail = userFromForm.UserName; 
+            string newProposedEmail = userFromForm.UserName;
 
             if (string.IsNullOrWhiteSpace(newProposedEmail))
             {
                 ModelState.AddModelError("UserName", "Username/Email cannot be empty.");
-                return View(existingUser); 
+                return View(existingUser);
             }
 
             // Check if the new email/username is different and if it's already taken
@@ -840,7 +968,7 @@ public class AdminController : Controller
                     return View(existingUser);
                 }
             }
-            
+
             if (emailChanged)
             {
                 var setEmailResult = await _userManager.SetEmailAsync(existingUser, newProposedEmail);
@@ -863,7 +991,7 @@ public class AdminController : Controller
                     return View(existingUser);
                 }
             }
-            
+
             // Only call UpdateAsync if properties were actually changed by UserManager methods
             // or if other properties like EmailConfirmed were modified.
             if (emailChanged || userNameChanged) {
@@ -879,7 +1007,7 @@ public class AdminController : Controller
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
                     }
-                    return View(existingUser); 
+                    return View(existingUser);
                 }
             } else {
                 // No actual changes to UserName or Email, so just redirect or inform user.
@@ -938,7 +1066,7 @@ public class AdminController : Controller
                 // It's generally better to ensure this succeeds before trying to delete the user.
                 // A transaction spanning both operations would be ideal for atomicity.
                 // For now, saving changes for player deletion separately.
-                await _context.SaveChangesAsync(); 
+                await _context.SaveChangesAsync();
             }
 
             // 2. Delete User via UserManager
