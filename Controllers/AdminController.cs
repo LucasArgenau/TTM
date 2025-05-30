@@ -697,24 +697,60 @@ public class AdminController : Controller
 
         return RedirectToAction("ManageResults", new { tournamentId });
     }
+    private static char GetRandomChar(string charSet, RandomNumberGenerator rng)
+    {
+        if (string.IsNullOrEmpty(charSet))
+            throw new ArgumentException("Character set cannot be null or empty", nameof(charSet));
+        
+        var byteBuffer = new byte[sizeof(uint)];
+        rng.GetBytes(byteBuffer);
+        uint num = BitConverter.ToUInt32(byteBuffer, 0);
+        return charSet[(int)(num % (uint)charSet.Length)];
+    }
+
+    private static void Shuffle(List<char> list, RandomNumberGenerator rng)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            var box = new byte[sizeof(uint)]; // Changed to sizeof(uint) for consistency with GetRandomChar
+            rng.GetBytes(box);
+            int k = (int)(BitConverter.ToUInt32(box, 0) % n--);
+            (list[n], list[k]) = (list[k], list[n]); // Swap
+        }
+    }
+
     private string GenerateRandomPassword(int length)
     {
-        const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()_-+={[}]|:;<,>.?";
+        if (length < 3) // Minimum length to include one of each required type
+            throw new ArgumentOutOfRangeException(nameof(length), "Password length must be at least 3 to meet complexity requirements.");
 
-        var password = new char[length];
+        const string lowerChars = "abcdefghijklmnopqrstuvwxyz";
+        const string upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string digitChars = "0123456789";
+        const string specialChars = "!@#$%^&*()_-+={[}]|:;<,>.?"; // Explicitly define special chars
+        const string allValidChars = lowerChars + upperChars + digitChars + specialChars;
+
+        var passwordChars = new List<char>(length);
+        
         using (var rng = RandomNumberGenerator.Create())
         {
-            var byteBuffer = new byte[sizeof(uint)];
+            // 1. Add one of each required character type
+            passwordChars.Add(GetRandomChar(lowerChars, rng));
+            passwordChars.Add(GetRandomChar(upperChars, rng));
+            passwordChars.Add(GetRandomChar(digitChars, rng));
 
-            for (int i = 0; i < length; i++)
+            // 2. Add remaining characters from the full set of valid characters
+            // If length is exactly 3, this loop won't run, which is correct.
+            for (int i = 3; i < length; i++)
             {
-                rng.GetBytes(byteBuffer);
-                uint num = BitConverter.ToUInt32(byteBuffer, 0);
-                password[i] = validChars[(int)(num % (uint)validChars.Length)];
+                passwordChars.Add(GetRandomChar(allValidChars, rng));
             }
-        }
 
-        return new string(password);
+            // 3. Shuffle the password to ensure randomness in character positions
+            Shuffle(passwordChars, rng);
+        }
+        return new string(passwordChars.ToArray());
     }
     
     public async Task<IActionResult> Users()
