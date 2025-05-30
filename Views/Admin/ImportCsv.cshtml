@@ -58,6 +58,8 @@
         </div>
     }
 
+    <div asp-validation-summary="All" class="text-danger"></div>
+
     <form asp-action="ImportCsv" enctype="multipart/form-data" method="post">
         <input type="hidden" asp-for="TournamentId" />
 
