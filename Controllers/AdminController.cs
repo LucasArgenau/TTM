@@ -503,50 +503,42 @@ public class AdminController : Controller
                 if (!string.Equals(values[5], "NA", StringComparison.OrdinalIgnoreCase))
                     int.TryParse(values[5], out stDev);
 
-                var userName = $"player{ratingsCentralId}";
-                var userEmail = $"player{ratingsCentralId}@example.com"; // Placeholder email
-            var userName = $"player{ratingsCentralId}";
-            User user = await _userManager.FindByNameAsync(userName);
-            bool userExisted = user != null;
+                var userEmailForLookup = $"player{ratingsCentralId}@example.com"; // UserName will be this email
 
-            if (!userExisted)
+                User user = await _userManager.FindByNameAsync(userEmailForLookup); // Find by UserName
+                bool userExisted = user != null;
+
+                if (!userExisted)
                 {
-                var userEmail = $"player{ratingsCentralId}@example.com"; // Placeholder email
-                var plainPassword = GenerateRandomPassword(8);
-                user = new User
-                {
-                    UserName = userName,
-                    Email = userEmail,
-                    EmailConfirmed = true // Avoid email confirmation for auto-generated accounts
-                };
-
-                var createUserResult = await _userManager.CreateAsync(user, plainPassword);
-
-                if (createUserResult.Succeeded)
+                    var plainPassword = GenerateRandomPassword(8);
+                    user = new User
                     {
-                    var addToRoleResult = await _userManager.AddToRoleAsync(user, "Player");
-                    if (!addToRoleResult.Succeeded)
+                        UserName = userEmailForLookup, // UserName is the email
+                        Email = userEmailForLookup,    // Email is also the email
+                        EmailConfirmed = true
+                    };
+
+                    var createUserResult = await _userManager.CreateAsync(user, plainPassword);
+
+                    if (createUserResult.Succeeded)
+                    {
+                        var addToRoleResult = await _userManager.AddToRoleAsync(user, "Player");
+                        if (!addToRoleResult.Succeeded)
                         {
-                        foreach (var error in addToRoleResult.Errors)
-                        {
-                            importErrors.Add($"Linha {lineNumber}: Erro ao atribuir role 'Player' ao novo usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
+                            importErrors.Add($"Linha {lineNumber}: Erro ao atribuir role 'Player' ao novo usuário {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", addToRoleResult.Errors.Select(e => e.Description))}");
+                            // Optional: await _userManager.DeleteAsync(user);
+                            continue; // Skip this player
                         }
-                        // Consider deleting user: await _userManager.DeleteAsync(user);
-                        continue; // Skip this player
-                    }
-                    newUserCredentials.Add(userName, plainPassword); // Store credentials only for new users
+                        newUserCredentials.Add(userEmailForLookup, plainPassword); // Key is userEmailForLookup (the UserName)
                     }
                     else
                     {
-                    foreach (var error in createUserResult.Errors)
-                        {
-                        importErrors.Add($"Linha {lineNumber}: Erro ao criar usuário {userName} (RCID: {ratingsCentralId}): {error.Description}");
-                        }
-                    continue; // Skip this player
+                        importErrors.Add($"Linha {lineNumber}: Erro ao criar usuário {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", createUserResult.Errors.Select(e => e.Description))}");
+                        continue; // Skip this player
                     }
                 }
-            // If user existed or was successfully created and role assigned:
-            var player = new Player
+                // If user existed or was successfully created and role assigned:
+                var player = new Player
                 {
                 Name = values[3], // Assuming column index 3 is Name
                 RatingsCentralId = ratingsCentralId,
