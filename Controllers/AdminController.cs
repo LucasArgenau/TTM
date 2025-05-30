@@ -354,9 +354,15 @@ public class AdminController : Controller
                 }
                 
                 // Add players already in the tournament (via TournamentPlayers) but NOT in the current CSV batch.
+                var playerIdsFromCsvBeingProcessed = playersToLinkToTournament
+                    .Where(p => p.Id != 0) // Only consider players that have an ID
+                    .Select(p => p.Id)
+                    .ToList();
+
                 var existingPlayersInDbForTournament = await _context.TournamentPlayers
-                    .Where(tp => tp.TournamentId == tournament.Id && !playersToLinkToTournament.Any(pCsv => pCsv.Id != 0 && pCsv.Id == tp.PlayerId))
-                    .Select(tp => tp.Player) // Make sure Player navigation property is loaded
+                    .Include(tp => tp.Player) // Ensure Player is included before Select
+                    .Where(tp => tp.TournamentId == tournament.Id && !playerIdsFromCsvBeingProcessed.Contains(tp.PlayerId))
+                    .Select(tp => tp.Player)
                     .ToListAsync();
 
                 foreach (var existingPlayerInTournament in existingPlayersInDbForTournament)
