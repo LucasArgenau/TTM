@@ -4,6 +4,20 @@
     ViewData["Title"] = "Gerenciar Usuários";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
 <h2 class="text-2xl font-bold text-blue-900 mb-4">Gerenciar Usuários</h2>
 
 <table class="table-auto w-full bg-white shadow-md rounded-lg">

@@ -788,7 +788,7 @@ public class AdminController : Controller
         {
             if (id == null) return NotFound();
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null) return NotFound();
 
             return View(user);
@@ -797,42 +797,96 @@ public class AdminController : Controller
         // EDITAR USUÁRIO - POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(int id, [Bind("Id,UserName,Role")] User user)
+        public async Task<IActionResult> EditUser(int id, [Bind("Id,UserName")] User userFromForm)
         {
-            if (id != user.Id) 
-                return NotFound();
-
-            if (!ModelState.IsValid)
+            if (id != userFromForm.Id) 
             {
-                // Se o modelo não for válido, retorna a view com os dados preenchidos
-                return View(user);
+                return NotFound();
             }
 
-            var existingUser = await _context.Users.FindAsync(id);
-            if (existingUser == null) 
+            var existingUser = await _userManager.FindByIdAsync(id.ToString());
+            if (existingUser == null)
+            {
                 return NotFound();
-
-            // Atualiza os campos que deseja alterar
-            existingUser.UserName = user.UserName;
-
-            try
-            {
-                _context.Update(existingUser);
-                await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+
+            string newProposedEmail = userFromForm.UserName; 
+
+            if (string.IsNullOrWhiteSpace(newProposedEmail))
             {
-                if (!UserExists(existingUser.Id))
+                ModelState.AddModelError("UserName", "Username/Email cannot be empty.");
+                return View(existingUser); 
+            }
+
+            // Check if the new email/username is different and if it's already taken
+            bool emailChanged = !string.Equals(existingUser.Email, newProposedEmail, StringComparison.OrdinalIgnoreCase);
+            bool userNameChanged = !string.Equals(existingUser.UserName, newProposedEmail, StringComparison.OrdinalIgnoreCase);
+
+            if (emailChanged)
+            {
+                var userByNewEmail = await _userManager.FindByEmailAsync(newProposedEmail);
+                if (userByNewEmail != null && userByNewEmail.Id != existingUser.Id)
                 {
-                    return NotFound();
+                    ModelState.AddModelError("UserName", "This email is already in use by another account.");
+                    return View(existingUser);
+                }
+            }
+            if (userNameChanged) // This check might be redundant if UserName is always Email, but good for robustness
+            {
+                 var userByNewUserName = await _userManager.FindByNameAsync(newProposedEmail);
+                if (userByNewUserName != null && userByNewUserName.Id != existingUser.Id)
+                {
+                    ModelState.AddModelError("UserName", "This username is already in use by another account.");
+                    return View(existingUser);
+                }
+            }
+            
+            if (emailChanged)
+            {
+                var setEmailResult = await _userManager.SetEmailAsync(existingUser, newProposedEmail);
+                if (!setEmailResult.Succeeded)
+                {
+                    foreach (var error in setEmailResult.Errors) { ModelState.AddModelError(string.Empty, error.Description); }
+                    return View(existingUser);
+                }
+                existingUser.EmailConfirmed = true; // Admin change implies confirmation
+            }
+
+            if (userNameChanged)
+            {
+                var setUserNameResult = await _userManager.SetUserNameAsync(existingUser, newProposedEmail);
+                if (!setUserNameResult.Succeeded)
+                {
+                    // Potentially attempt to revert email change if critical, or ensure transactional behavior.
+                    // For now, add errors and return.
+                    foreach (var error in setUserNameResult.Errors) { ModelState.AddModelError(string.Empty, error.Description); }
+                    return View(existingUser);
+                }
+            }
+            
+            // Only call UpdateAsync if properties were actually changed by UserManager methods
+            // or if other properties like EmailConfirmed were modified.
+            if (emailChanged || userNameChanged) {
+                 var updateResult = await _userManager.UpdateAsync(existingUser);
+                if (updateResult.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "User updated successfully.";
+                    return RedirectToAction(nameof(Users));
                 }
                 else
                 {
-                    throw;
+                    foreach (var error in updateResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                    return View(existingUser); 
                 }
+            } else {
+                // No actual changes to UserName or Email, so just redirect or inform user.
+                // Or, if other properties could be changed on this form in future, this logic would differ.
+                TempData["SuccessMessage"] = "No changes detected for user."; // Or "SuccessMessage" if preferred
+                return RedirectToAction(nameof(Users));
             }
-
-            return RedirectToAction(nameof(Users));
         }
 
         private bool UserExists(int id)
@@ -858,11 +912,46 @@ public class AdminController : Controller
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUserConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound();
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return NotFound();
+            }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            // Check if the user is a player in any tournament
+            // Assumes Player.UserId links to User.Id and Player has TournamentPlayers collection
+            var isPlayerInTournament = await _context.Players
+                .AnyAsync(p => p.UserId == user.Id && p.TournamentPlayers.Any());
+
+            if (isPlayerInTournament)
+            {
+                TempData["ErrorMessage"] = "You cannot delete a user who is currently part of a tournament.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            // If not in a tournament, proceed with deletion
+            // 1. Delete associated Player record first
+            var playerRecord = await _context.Players.FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (playerRecord != null)
+            {
+                _context.Players.Remove(playerRecord);
+                // It's generally better to ensure this succeeds before trying to delete the user.
+                // A transaction spanning both operations would be ideal for atomicity.
+                // For now, saving changes for player deletion separately.
+                await _context.SaveChangesAsync(); 
+            }
+
+            // 2. Delete User via UserManager
+            var deleteUserResult = await _userManager.DeleteAsync(user);
+            if (deleteUserResult.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User and any associated player data deleted successfully.";
+            }
+            else
+            {
+                var errorMessages = string.Join(", ", deleteUserResult.Errors.Select(e => e.Description));
+                TempData["ErrorMessage"] = $"Error deleting user: {errorMessages}";
+            }
 
             return RedirectToAction(nameof(Users));
         }
