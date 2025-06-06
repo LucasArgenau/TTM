@@ -1,7 +1,7 @@
 @model TorneioTenisMesa.Models.ViewModels.CreateTournamentViewModel
 
 @{
-    ViewData["Title"] = "Criar Torneio";
+    ViewData["Title"] = "New Tournament";
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -28,8 +28,8 @@
             <span asp-validation-for="EndDate" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary">Próximo: Importar Jogadores</button>
-        <a asp-action="Index" class="btn btn-secondary ml-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Import Players</button>
+        <a asp-action="Index" class="btn btn-secondary ml-2">Cancel</a>
     </form>
 </div>
 

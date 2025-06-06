@@ -1,0 +1,58 @@
+@model TorneioTenisMesa.ViewModels.PlayerProfileViewModel
+
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+<h2>Perfil do Jogador</h2>
+
+<div class="mb-4">
+    <h4>@Model.Name</h4>
+    <p><strong>Rating:</strong> @Model.Rating</p>
+</div>
+
+<h5>Histórico de Partidas</h5>
+
+@if (Model.MatchHistory.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Adversário</th>
+                <th>Placar</th>
+                <th>Resultado</th>
+                <th>Torneio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var game in Model.MatchHistory)
+            {
+                <tr>
+                    <td>@game.Date.ToString("dd/MM/yyyy")</td>
+                    <td>@game.OpponentName</td>
+                    <td>@game.ScorePlayer - @game.ScoreOpponent</td>
+                    <td>
+                        @if (game.ScorePlayer > game.ScoreOpponent)
+                        {
+                            <span class="text-success">Vitória</span>
+                        }
+                        else if (game.ScorePlayer < game.ScoreOpponent)
+                        {
+                            <span class="text-danger">Derrota</span>
+                        }
+                        else
+                        {
+                            <span class="text-secondary">Empate</span>
+                        }
+                    </td>
+                    <td>@game.TournamentName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Nenhuma partida finalizada encontrada.</p>
+}

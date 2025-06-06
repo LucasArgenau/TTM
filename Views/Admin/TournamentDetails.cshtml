@@ -1,7 +1,7 @@
 @model TorneioTenisMesa.Models.Tournament
 
 @{
-    ViewData["Title"] = "Detalhes do Torneio";
+    ViewData["Title"] = "Tournament Details";
 }
 
 <h2>@ViewData["Title"]</h2>
@@ -9,54 +9,77 @@
 @if (Model != null)
 {
     <h3>@Model.Name</h3>
-    <p><strong>Data de Início:</strong> @Model.StartDate.ToString("dd/MM/yyyy")</p>
-    <p><strong>Data de Término:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</p>
+    <p><strong>Start Date:</strong> @Model.StartDate.ToString("dd/MM/yyyy")</p>
+    <p><strong>End Date:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</p>
 
-    <h4>Jogadores</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Grupo</th>
-                <th>Rating</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var tp in Model.TournamentPlayers)
-            {
-                <tr>
-                    <td>@tp.Player!.Name</td>
-                    <td>@tp.Player.Group</td>
-                    <td>@tp.Player.Rating</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div>
+        <button type="button" class="collapsible btn btn-primary mb-4">Players</button>
+        <div class="content" id="content_jogadores">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Division</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tp in Model.TournamentPlayers)
+                    {
+                        <tr>
+                            <td>@tp.Player!.Name</td>
+                            <td>@tp.Player.Group</td>
+                            <td>@tp.Player.Rating</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-    <h4>Jogos</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Jogador 1</th>
-                <th>Jogador 2</th>
-                <th>Data</th>
-                <th>Resultado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var game in Model.Games)
-            {
-                <tr>
-                    <td>@game.Player1!.Name</td>
-                    <td>@game.Player2!.Name</td>
-                    <td>@game.Date.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@game.ScorePlayer1 - @game.ScorePlayer2</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        <button type="button" class="collapsible btn btn-primary mb-4">Games</button>
+        <div class="content" id="content_jogos">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Player 1</th>
+                        <th>Player 2</th>
+                        <th>Date</th>
+                        <th>Results</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var game in Model.Games)
+                    {
+                        <tr>
+                            <td>@game.Player1!.Name</td>
+                            <td>@game.Player2!.Name</td>
+                            <td>@game.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@game.ScorePlayer1 - @game.ScorePlayer2</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 }
 else
 {
-    <p>Nenhum torneio encontrado.</p>
+    <p>There are no tournaments.</p>
 }
+
+<script>
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
+</script>

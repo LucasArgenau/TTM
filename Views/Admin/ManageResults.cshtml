@@ -1,62 +1,208 @@
 @model List<TorneioTenisMesa.Models.ViewModels.GameResultViewModel>
-
 @{
     ViewData["Title"] = "Gerenciar Resultados";
+    var tournamentId = Model.FirstOrDefault()?.TournamentId ?? 0;
 }
 
-<h2>@ViewData["Title"]</h2>
+<h2>Gerenciar Resultados</h2>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["NewUserCredentials"] is Dictionary<string, string> credentials && credentials.Any())
+{
+    <div id="popup" class="modal d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novas Credenciais Criadas</h5>
+                    <button type="button" class="btn-close" onclick="closePopup()"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead><tr><th>Email</th><th>Senha</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in credentials)
+                            {
+                                <tr><td>@item.Key</td><td>@item.Value</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="exportToCsv()">Exportar CSV</button>
+                    <button class="btn btn-secondary" onclick="closePopup()">Fechar</button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">Nenhum jogo disponível para inserir resultados.</div>
-}
-else
-{
-    <form asp-action="UpdateGameResults" method="post">
-        @Html.AntiForgeryToken()
+<form method="post" asp-action="SaveResults">
+    <input type="hidden" name="tournamentId" value="@tournamentId" />
 
-        <table class="table table-bordered table-striped">
+    <div class="mb-3">
+        <label>Grupo:</label>
+        <select id="groupFilter" class="form-select">
+            <option value="">Todos</option>
+            @foreach (var group in Model.Select(m => m.Group).Distinct())
+            {
+                <option value="@group">@group</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Jogador 1:</label>
+        <select id="player1Filter" class="form-select">
+            <option value="">Todos</option>
+            @foreach (var p1 in Model.Select(m => m.Player1Name).Distinct())
+            {
+                <option value="@p1">@p1</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Adversário:</label>
+        <select id="player2Filter" class="form-select">
+            <option value="">Todos</option>
+        </select>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="noResultsOnly" />
+        <label class="form-check-label" for="noResultsOnly">
+            Apenas jogos sem resultado
+        </label>
+    </div>
+
+    <button type="button" class="btn btn-primary mb-3" onclick="applyFilters()">Aplicar Filtros</button>
+
+    <div id="resultsSection" style="display:none">
+        <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Jogador 1</th>
-                    <th>Placar</th>
-                    <th>Jogador 2</th>
-                    <th>Placar</th>
                     <th>Grupo</th>
+                    <th>Jogador 1</th>
+                    <th>Pontos</th>
+                    <th>Jogador 2</th>
+                    <th>Pontos</th>
                     <th>Data</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="resultsTableBody">
                 @for (int i = 0; i < Model.Count; i++)
                 {
-                    <tr>
+                    <tr data-group="@Model[i].Group"
+                        data-p1="@Model[i].Player1Name"
+                        data-p2="@Model[i].Player2Name"
+                        data-empty="@((Model[i].ScorePlayer1 == null && Model[i].ScorePlayer2 == null).ToString().ToLower())">
+                        <td>@Model[i].Group</td>
                         <td>@Model[i].Player1Name</td>
                         <td>
-                            <input type="hidden" name="[@i].GameId" value="@Model[i].GameId" />
-                            <input type="number" name="[@i].ScorePlayer1" value="@Model[i].ScorePlayer1" class="form-control" />
+                            <input type="number" name="results[@i].ScorePlayer1" class="form-control" value="@Model[i].ScorePlayer1" min="0" />
                         </td>
                         <td>@Model[i].Player2Name</td>
                         <td>
-                            <input type="number" name="[@i].ScorePlayer2" value="@Model[i].ScorePlayer2" class="form-control" />
+                            <input type="number" name="results[@i].ScorePlayer2" class="form-control" value="@Model[i].ScorePlayer2" min="0" />
                         </td>
-                        <td>@Model[i].Group</td> <!-- Apenas exibe -->
-                        <td>@Model[i].Date.ToString("dd/MM/yyyy")</td> <!-- Apenas exibe -->
+                        <td>@Model[i].Date.ToString("dd/MM/yyyy")</td>
+                        <input type="hidden" name="results[@i].GameId" value="@Model[i].GameId" />
+                        <input type="hidden" name="results[@i].TournamentId" value="@tournamentId" />
                     </tr>
                 }
             </tbody>
         </table>
 
         <button type="submit" class="btn btn-success">Salvar Resultados</button>
-    </form>
-}
+        <button type="button" class="btn btn-warning" onclick="finalizar()">Finalizar Torneio</button>
+    </div>
+</form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const allRows = [...document.querySelectorAll("#resultsTableBody tr")];
+
+        function applyFilters() {
+            const group = document.getElementById("groupFilter").value;
+            const p1 = document.getElementById("player1Filter").value;
+            const p2 = document.getElementById("player2Filter").value;
+            const noResults = document.getElementById("noResultsOnly").checked;
+
+            let anyVisible = false;
+
+            allRows.forEach(row => {
+                const matchGroup = row.dataset.group === group || !group;
+                const matchP1 = row.dataset.p1 === p1 || !p1;
+                const matchP2 = row.dataset.p2 === p2 || !p2;
+                const isEmpty = row.dataset.empty === "true";
+                const matchEmpty = !noResults || isEmpty;
+
+                const visible = matchGroup && matchP1 && matchP2 && matchEmpty;
+                row.style.display = visible ? "" : "none";
+                if (visible) anyVisible = true;
+            });
+
+            document.getElementById("resultsSection").style.display = anyVisible ? "block" : "none";
+
+            // Preenche adversários com base no player1
+            const selectedP1 = p1;
+            const p2Select = document.getElementById("player2Filter");
+            p2Select.innerHTML = '<option value="">Todos</option>';
+
+            const opponents = [...new Set(
+                allRows
+                    .filter(r => r.dataset.p1 === selectedP1 || !selectedP1)
+                    .map(r => r.dataset.p2)
+            )];
+
+            opponents.forEach(op => {
+                if (op)
+                    p2Select.innerHTML += `<option value="${op}">${op}</option>`;
+            });
+        }
+
+        function closePopup() {
+            document.getElementById("popup").classList.remove("d-block");
+            document.getElementById("popup").style.display = "none";
+        }
+
+        function exportToCsv() {
+            let csv = "Email,Senha\n";
+            document.querySelectorAll("#popup table tbody tr").forEach(row => {
+                const cols = row.querySelectorAll("td");
+                csv += `${cols[0].innerText},${cols[1].innerText}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "credenciais.csv";
+            link.click();
+        }
+
+        function finalizar() {
+            const rows = [...document.querySelectorAll("#resultsTableBody tr")]
+                .filter(r => r.style.display !== "none");
+
+            const hasEmpty = rows.some(r => {
+                const inputs = r.querySelectorAll("input[type='number']");
+                return [...inputs].some(i => i.value === "" || parseInt(i.value) < 0);
+            });
+
+            if (hasEmpty) {
+                alert("Todos os jogos visíveis devem ter resultados preenchidos para finalizar.");
+                return;
+            }
+
+            document.querySelector("form").submit();
+        }
+    </script>
 }

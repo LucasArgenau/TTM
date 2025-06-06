@@ -1,7 +1,7 @@
 @model TorneioTenisMesa.Models.ViewModels.EditTournamentViewModel
 
 @{
-    ViewData["Title"] = "Editar Torneio";
+    ViewData["Title"] = "Edit Tournament";
 }
 
 <h2 class="mb-4">@ViewData["Title"]</h2>
@@ -10,9 +10,9 @@
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
-    <!-- Dados do Torneio -->
+    <!-- Tournament Details -->
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">Dados do Torneio</div>
+        <div class="card-header bg-primary text-white">Tournament Details</div>
         <div class="card-body row g-3">
             <div class="col-md-4">
                 <label asp-for="Name" class="form-label"></label>
@@ -32,19 +32,19 @@
         </div>
     </div>
 
-    <!-- Resultados dos Jogos -->
+    <!-- Game Results -->
     <div class="card">
-        <div class="card-header bg-secondary text-white">Resultados dos Jogos</div>
+        <div class="card-header bg-secondary text-white">Game Results</div>
         <div class="card-body">
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Jogador 1</th>
-                        <th>Placar</th>
-                        <th>Jogador 2</th>
-                        <th>Placar</th>
-                        <th>Grupo</th>
-                        <th>Data</th>
+                        <th>Player 1</th>
+                        <th>Score</th>
+                        <th>Player 2</th>
+                        <th>Score</th>
+                        <th>Division</th>
+                        <th>Date</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,10 +72,10 @@
     <!-- Botões -->
     <div class="mt-4">
         <button type="submit" class="btn btn-success">
-            <i class="bi bi-check-circle"></i> Salvar Alterações
+            <i class="bi bi-check-circle"></i> Save Changes
         </button>
         <a asp-action="Index" class="btn btn-outline-secondary ms-2">
-            <i class="bi bi-arrow-left"></i> Voltar
+            <i class="bi bi-arrow-left"></i> Cancel
         </a>
     </div>
 </form>

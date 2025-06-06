@@ -8,18 +8,18 @@ namespace TorneioTenisMesa.Models.ViewModels
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Nome do torneio é obrigatório")]
-        [Display(Name = "Nome do Torneio")]
+        [Required(ErrorMessage = "Please enter the name of the Tournament")]
+        [Display(Name = "Tournament")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Data de início é obrigatória")]
+        [Required(ErrorMessage = "Please enter the Start Date")]
         [DataType(DataType.Date)]
-        [Display(Name = "Data de Início")]
+        [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
 
-        [Required(ErrorMessage = "Data de término é obrigatória")]
+        [Required(ErrorMessage = "Please enter the End Date")]
         [DataType(DataType.Date)]
-        [Display(Name = "Data de Término")]
+        [Display(Name = "End Date")]
         public DateTime EndDate { get; set; }
 
         public List<GameResultViewModel> Games { get; set; } = new();

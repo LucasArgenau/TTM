@@ -4,21 +4,21 @@ namespace TorneioTenisMesa.Models.ViewModels
 {
     public class CreateAdminViewModel
     {
-        [Required(ErrorMessage = "O e-mail é obrigatório.")]
-        [EmailAddress(ErrorMessage = "Informe um e-mail válido.")]
+        [Required(ErrorMessage = "E-mail is required")]
+        [EmailAddress(ErrorMessage = "Enter a valid e-mail.")]
         [Display(Name = "E-mail")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "A senha é obrigatória.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter entre 6 e 100 caracteres.")]
+        [Required(ErrorMessage = "Password is required.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Senha")]
+        [Display(Name = "Password")]
         public string Password { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "A confirmação da senha é obrigatória.")]
-        [Compare("Password", ErrorMessage = "As senhas não conferem.")]
+        [Required(ErrorMessage = "Password confirmation is required.")]
+        [Compare("Password", ErrorMessage = "Passwords do not match.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Confirmar Senha")]
+        [Display(Name = "Confirm password")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

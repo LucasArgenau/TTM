@@ -5,6 +5,7 @@ using TorneioTenisMesa.Models;
 using TorneioTenisMesa.Models.ViewModels;
 using System.Threading.Tasks;
 using System.Linq;
+using TorneioTenisMesa.ViewModels;
 
 [Authorize(Roles = "Player")]
 public class PlayerController : Controller
@@ -37,19 +38,52 @@ public class PlayerController : Controller
     // Exibe informações do jogador (Perfil)
     public async Task<IActionResult> Profile()
     {
-        var userId = User.Identity!.Name;
+        var userName = User.Identity!.Name;
+
         var player = await _context.Players
             .Include(p => p.User)
-            .Include(p => p.TournamentPlayers)
-            .FirstOrDefaultAsync(p => p.User!.UserName == userId);
+            .FirstOrDefaultAsync(p => p.User!.UserName == userName);
 
         if (player == null)
-        {
             return NotFound("Jogador não encontrado.");
-        }
 
-        return View(player);
+        var games = await _context.Games
+            .Include(g => g.Tournament)
+            .Include(g => g.Player1)
+            .Include(g => g.Player2)
+            .Where(g =>
+                (g.Player1Id == player.Id || g.Player2Id == player.Id)
+                && g.ScorePlayer1 >= 0 && g.ScorePlayer2 >= 0 // apenas jogos com resultados preenchidos
+            )
+            .ToListAsync();
+
+        var history = games.Select(g =>
+        {
+            bool isPlayer1 = g.Player1Id == player.Id;
+            var opponent = isPlayer1 ? g.Player2 : g.Player1;
+
+            return new CompletedMatchViewModel
+            {
+                Date = g.Date,
+                OpponentName = opponent?.Name ?? "Desconhecido",
+                ScorePlayer = isPlayer1 ? g.ScorePlayer1 : g.ScorePlayer2,
+                ScoreOpponent = isPlayer1 ? g.ScorePlayer2 : g.ScorePlayer1,
+                TournamentName = g.Tournament?.Name ?? "Torneio não identificado"
+            };
+        })
+        .OrderByDescending(m => m.Date)
+        .ToList();
+
+        var viewModel = new PlayerProfileViewModel
+        {
+            Name = player.Name!,
+            Rating = player.Rating,
+            MatchHistory = history
+        };
+
+        return View(viewModel);
     }
+
 
     // Exibe resultados das partidas
     public async Task<IActionResult> Results()

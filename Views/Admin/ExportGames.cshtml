@@ -1,26 +1,26 @@
 @model TorneioTenisMesa.Models.ViewModels.ExportGamesViewModel
 
 @{
-    ViewData["Title"] = "Exportar Jogos para CSV";
+    ViewData["Title"] = "Export Games as CSV";
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form asp-action="ExportGamesToCsv" method="post">
     <div class="form-group">
-        <label for="TournamentId">Selecione um Torneio:</label>
+        <label for="TournamentId">Select a tournament:</label>
         <select asp-for="TournamentId" asp-items="@(new SelectList(Model.Tournaments, "Id", "Name"))" class="form-control" required>
-            <option value="">-- Selecione --</option>
+            <option value="">-- Select --</option>
         </select>
     </div>
 
     <div class="form-group mt-3">
-        <label>Tipo de exportação:</label>
+        <label>How to export:</label>
         <select asp-for="ExportOption" class="form-control">
-            <option value="all">Todos os jogos</option>
-            <option value="withResults">Apenas jogos com resultados</option>
+            <option value="all">All games</option>
+            <option value="withResults">Only finished games</option>
         </select>
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Exportar CSV</button>
+    <button type="submit" class="btn btn-primary mt-3">Export CSV</button>
 </form>

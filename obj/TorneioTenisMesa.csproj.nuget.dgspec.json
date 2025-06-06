@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj": {}
+    "C:\\Users\\L\\Desktop\\TTM\\TTM\\TorneioTenisMesa.csproj": {}
   },
   "projects": {
-    "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj": {
+    "C:\\Users\\L\\Desktop\\TTM\\TTM\\TorneioTenisMesa.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj",
+        "projectUniqueName": "C:\\Users\\L\\Desktop\\TTM\\TTM\\TorneioTenisMesa.csproj",
         "projectName": "TorneioTenisMesa",
-        "projectPath": "C:\\Users\\luisf\\Desktop\\test\\TTM\\TorneioTenisMesa.csproj",
-        "packagesPath": "C:\\Users\\luisf\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\luisf\\Desktop\\test\\TTM\\obj\\",
+        "projectPath": "C:\\Users\\L\\Desktop\\TTM\\TTM\\TorneioTenisMesa.csproj",
+        "packagesPath": "C:\\Users\\L\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\L\\Desktop\\TTM\\TTM\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\luisf\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\L\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -105,7 +105,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.410/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
