@@ -305,6 +305,7 @@ C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.MvcApplicationParts
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.RazorAssemblyInfo.cache
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.RazorAssemblyInfo.cs
+C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.sourcelink.json
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\staticwebassets\msbuild.TorneioTenisMesa.Microsoft.AspNetCore.StaticWebAssets.props
@@ -321,4 +322,3 @@ C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\refint\TorneioTenisMesa.dll
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.pdb
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.genruntimeconfig.cache
 C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\ref\TorneioTenisMesa.dll
-C:\Users\L\Desktop\TTM\TTM\obj\Debug\net8.0\TorneioTenisMesa.sourcelink.json

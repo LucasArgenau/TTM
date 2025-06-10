@@ -12,8 +12,8 @@ using TorneioTenisMesa.Models;
 namespace TorneioTenisMesa.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250604171940_mig7")]
-    partial class mig7
+    [Migration("20250610194735_mig2")]
+    partial class mig2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
