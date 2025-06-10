@@ -120,24 +120,35 @@ public class PlayerController : Controller
         return View(results);
     }
 
-
-    // Exibe o ranking
+    // Display player ranking
+    [HttpGet]
     public async Task<IActionResult> Ranking()
     {
-        var ranking = await _context.Players
+        var userName = User.Identity!.Name;
+        // var name = player.Id;
+
+        var player = await _context.Players
             .Include(p => p.User)
-            .OrderByDescending(p => p.Rating)
-            .Select(p => new
+            .FirstOrDefaultAsync(p => p.User!.UserName == userName);
+
+        var players = await _context.Players
+            .Include(p => p.User) // Include User if needed
+            .OrderByDescending(p => p.Rating) // order by rating descending
+            .Select(p => new PlayerRankingViewModel
             {
-                PlayerName = p.Name,
-                Username = p.User!.UserName,
-                p.Rating
+                Name = p.Name!,
+                UserName = p.User!.UserName,
+                Rating = p.Rating
             })
             .ToListAsync();
+        
+        ViewBag.CurrentPlayerName = player?.Name ?? "Desconhecido";
+        ViewBag.CurrentUserName = userName;
+        ViewBag.CurrentPlayerRating = player?.Rating ?? 0;
 
-        return View(ranking);
+        return View(players);
     }
-
+    
     // Exibe detalhes do torneio atual em que o jogador está participando
     public async Task<IActionResult> TournamentDetails()
     {

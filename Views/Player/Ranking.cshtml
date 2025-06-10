@@ -1,20 +1,104 @@
-@model IEnumerable<dynamic>
+@model List<TorneioTenisMesa.ViewModels.PlayerRankingViewModel>
+
+@{
+    ViewData["Title"] = "Ranking";
+    var currentName = ViewBag.CurrentName as string;
+    var currentUserName = ViewBag.CurrentUserName as string;
+    var currentPlayerRating = ViewBag.CurrentPlayerRating as int? ?? 0;
+}
 
 <h2>Ranking</h2>
-<table>
+
+<p><strong>Player: </strong> @ViewBag.CurrentPlayerName</p>
+<p><strong>Username: </strong>@currentUserName</p>
+<p><strong>Rating: </strong>@currentPlayerRating</p>
+
+<table class="table table-striped" id="rankingTable">
     <thead>
         <tr>
-            <th>Jogador</th>
-            <th>Rating</th>
+            <th>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="sortTable(0)">
+                    Name <span id="sortIconName">&#x25B2;</span> <!-- Starting as ▲ -->
+                </button>
+            </th>
+            <th>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="sortTable(1)">
+                    Rating <span id="sortIconRating">&#x25B2;</span> <!-- Starting as ▲ -->
+                </button>
+            </th>
         </tr>
     </thead>
     <tbody>
         @foreach (var player in Model)
         {
-            <tr>
-                <td>@player.UserName</td>
+            //var highlightClass = player.UserName == currentUserName ? "table-info fw-bold" : "";
+            var highlightClass = player.UserName == currentUserName ? "highlight-current-player" : "";
+            <tr class="@highlightClass">
+                <td>@player.Name</td>
                 <td>@player.Rating</td>
             </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <style>
+        .highlight-current-player {
+            background-color: #ffeeba !important;
+            border-left: 5px solid #ffc107;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        let sortDirections = [true, false]; // [Name asc, Rating desc initally]
+
+        window.addEventListener("DOMContentLoaded", () => {
+            updateSortIcons(1, false); // Rating DESC standard
+        });
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById("rankingTable");
+            const tbody = table.tBodies[0];
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            const asc = sortDirections[columnIndex];
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText.trim();
+                const bText = b.cells[columnIndex].innerText.trim();
+
+                if (columnIndex === 1) {
+                    // Rating (numeric)
+                    return asc ? aText - bText : bText - aText;
+                } else {
+                    // Name (text)
+                    return asc
+                        ? aText.localeCompare(bText)
+                        : bText.localeCompare(aText);
+                }
+            });
+
+            // Re-anexa as linhas na nova ordem
+            rows.forEach(row => tbody.appendChild(row));
+
+            // Atualiza ícones
+            updateSortIcons(columnIndex, asc);
+
+            // Inverte direção
+            sortDirections[columnIndex] = !asc;
+        }
+
+        function updateSortIcons(activeColumn, asc) {
+            // Reset icons
+            document.getElementById("sortIconName").innerHTML = "&#x25B2;";
+            document.getElementById("sortIconRating").innerHTML = "&#x25B2;";
+
+            const icon = asc ? "&#x25B2;" : "&#x25BC;"; // ▲ ou ▼
+
+            if (activeColumn === 0) {
+                document.getElementById("sortIconName").innerHTML = icon;
+            } else if (activeColumn === 1) {
+                document.getElementById("sortIconRating").innerHTML = icon;
+            }
+        }
+    </script>
+}
