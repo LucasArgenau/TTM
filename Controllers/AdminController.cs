@@ -597,11 +597,20 @@ public class AdminController : Controller
         var games = gamesQuery.ToList();
 
         var csvBuilder = new StringBuilder();
-        csvBuilder.AppendLine("Jogador1,Placar1,Jogador2,Placar2,Grupo,Data");
+        csvBuilder.AppendLine("GameDate,Division,Round,GameID,GameNO,Player 1,Player 1 RC ID,Player 2,Player 2 RC ID,Sets");
 
         foreach (var g in games)
         {
-            csvBuilder.AppendLine($"{g.Player1!.Name},{g.ScorePlayer1},{g.Player2!.Name},{g.ScorePlayer2},{g.Group},{g.Date:dd/MM/yyyy}");
+            csvBuilder.AppendLine($"{g.Date:dd/MM/yyyy}," +
+                                  $"{g.Group}," +
+                                  $"{g.Round + 1}," +
+                                  $"{g.Id}," +
+                                  $"{g.GameNo + 1}," +
+                                  $"{g.Player1?.Name}," +
+                                  $"{g.Player1?.RatingsCentralId}," +
+                                  $"{g.Player2?.Name}," +
+                                  $"{g.Player2?.RatingsCentralId}," +
+                                  $"{g.ScorePlayer1}-{g.ScorePlayer2}");
         }
 
         var bytes = Encoding.UTF8.GetBytes(csvBuilder.ToString());
@@ -624,28 +633,6 @@ public class AdminController : Controller
         return View("TournamentDetails", tournament);
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateGameResults(List<GameResultViewModel> gameResults)
-    {
-        foreach (var result in gameResults)
-        {
-            if (result.ScorePlayer1 < 0 || result.ScorePlayer2 < 0)
-                continue; // Ignora pontuações inválidas
-
-            var game = await _context.Games.FindAsync(result.GameId);
-            if (game != null)
-            {
-                game.ScorePlayer1 = result.ScorePlayer1;
-                game.ScorePlayer2 = result.ScorePlayer2;
-            }
-        }
-
-        await _context.SaveChangesAsync();
-
-        TempData["SuccessMessage"] = "Resultados atualizados com sucesso!";
-        return RedirectToAction(nameof(ManageResults));
-    }
     [HttpGet]
     public IActionResult ManageResults(int tournamentId)
     {
@@ -684,7 +671,7 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> SaveResults(List<GameResultViewModel> results)
+    public async Task<IActionResult> SaveResults(List<GameResultViewModel> results, string action)
     {
         if (results == null || !results.Any())
         {
@@ -703,15 +690,20 @@ public class AdminController : Controller
         }
 
         await _context.SaveChangesAsync();
-
         TempData["SuccessMessage"] = "Resultados salvos com sucesso!";
 
-        // Aqui pega o tournamentId do primeiro resultado com segurança,
-        // porque já garantimos que a lista não está vazia
         int tournamentId = results.First().TournamentId;
 
+        if (action == "finalizar")
+        {
+            // Aqui você pode executar alguma lógica extra de finalização, se quiser
+            return RedirectToAction("Index"); // Vai para a tela principal do Admin
+        }
+
+        // Caso contrário, volta para a tela de gerenciamento de resultados
         return RedirectToAction("ManageResults", new { tournamentId });
     }
+
     private static char GetRandomChar(string charSet, RandomNumberGenerator rng)
     {
         if (string.IsNullOrEmpty(charSet))

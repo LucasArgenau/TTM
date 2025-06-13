@@ -4,7 +4,13 @@
     ViewData["Title"] = "Tournament Details";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="d-flex align-items-center gap-2">
+    <h2>@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-primary ms-auto">
+        Back
+    </a>
+</div>
+
 
 @if (Model != null)
 {

@@ -42,7 +42,12 @@
 </style>
 
 <div class="form-container">
+    <div class="d-flex align-items-center gap-2">
     <h2>Importar Jogadores</h2>
+    <a asp-action="Index" class="btn btn-primary ms-auto">
+        Back
+    </a>
+    </div>
 
     @if (!string.IsNullOrEmpty(Model.SuccessMessage))
     {

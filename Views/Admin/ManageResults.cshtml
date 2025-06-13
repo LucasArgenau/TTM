@@ -49,7 +49,7 @@
 
     <div class="mb-3">
         <label>Grupo:</label>
-        <select id="groupFilter" class="form-select">
+        <select id="groupFilter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
             @foreach (var group in Model.Select(m => m.Group).Distinct())
             {
@@ -60,7 +60,7 @@
 
     <div class="mb-3">
         <label>Jogador 1:</label>
-        <select id="player1Filter" class="form-select">
+        <select id="player1Filter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
             @foreach (var p1 in Model.Select(m => m.Player1Name).Distinct())
             {
@@ -71,19 +71,17 @@
 
     <div class="mb-3">
         <label>Adversário:</label>
-        <select id="player2Filter" class="form-select">
+        <select id="player2Filter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
         </select>
     </div>
 
     <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="noResultsOnly" />
+        <input class="form-check-input" type="checkbox" id="noResultsOnly" onchange="applyfilters()" />
         <label class="form-check-label" for="noResultsOnly">
-            Apenas jogos sem resultado
+            Somente jogos sem resultados
         </label>
     </div>
-
-    <button type="button" class="btn btn-primary mb-3" onclick="applyFilters()">Aplicar Filtros</button>
 
     <div id="resultsSection" style="display:none">
         <table class="table table-bordered">
@@ -103,7 +101,7 @@
                     <tr data-group="@Model[i].Group"
                         data-p1="@Model[i].Player1Name"
                         data-p2="@Model[i].Player2Name"
-                        data-empty="@((Model[i].ScorePlayer1 == null && Model[i].ScorePlayer2 == null).ToString().ToLower())">
+                        data-empty="@((Model[i].ScorePlayer1 == 0 && Model[i].ScorePlayer2 == 0).ToString().ToLower())">
                         <td>@Model[i].Group</td>
                         <td>@Model[i].Player1Name</td>
                         <td>
@@ -121,8 +119,12 @@
             </tbody>
         </table>
 
-        <button type="submit" class="btn btn-success">Salvar Resultados</button>
-        <button type="button" class="btn btn-warning" onclick="finalizar()">Finalizar Torneio</button>
+        <button type="submit" name="action" value="save" class="btn btn-success">
+            Salvar Resultados
+        </button>
+        <button type="submit" name="action" value="finalizar" class="btn btn-danger ms-auto">
+            Finalizar Torneio
+        </button>
     </div>
 </form>
 
@@ -139,33 +141,48 @@
             let anyVisible = false;
 
             allRows.forEach(row => {
+                const player1 = row.dataset.p1;
+                const player2 = row.dataset.p2;
                 const matchGroup = row.dataset.group === group || !group;
-                const matchP1 = row.dataset.p1 === p1 || !p1;
-                const matchP2 = row.dataset.p2 === p2 || !p2;
                 const isEmpty = row.dataset.empty === "true";
                 const matchEmpty = !noResults || isEmpty;
 
-                const visible = matchGroup && matchP1 && matchP2 && matchEmpty;
+                // Nova lógica para verificar os jogadores
+                const matchPlayer1Only = p1 && !p2 && (player1 === p1 || player2 === p1);
+                const matchPlayer2Only = !p1 && p2 && (player1 === p2 || player2 === p2);
+                const matchBothPlayers = p1 && p2 && (
+                    (player1 === p1 && player2 === p2) ||
+                    (player1 === p2 && player2 === p1)
+                );
+                const matchNoPlayers = !p1 && !p2;
+
+                const matchPlayers = matchNoPlayers || matchPlayer1Only || matchPlayer2Only || matchBothPlayers;
+
+                const visible = matchGroup && matchPlayers && matchEmpty;
                 row.style.display = visible ? "" : "none";
                 if (visible) anyVisible = true;
             });
 
             document.getElementById("resultsSection").style.display = anyVisible ? "block" : "none";
 
-            // Preenche adversários com base no player1
-            const selectedP1 = p1;
+            // Preenche adversários com base em qualquer jogador
             const p2Select = document.getElementById("player2Filter");
             p2Select.innerHTML = '<option value="">Todos</option>';
 
-            const opponents = [...new Set(
-                allRows
-                    .filter(r => r.dataset.p1 === selectedP1 || !selectedP1)
-                    .map(r => r.dataset.p2)
-            )];
+            const opponents = new Set();
+
+            allRows.forEach(row => {
+                const pl1 = row.dataset.p1;
+                const pl2 = row.dataset.p2;
+
+                if (!p1 || pl1 === p1 || pl2 === p1) {
+                    if (pl1 && pl1 !== p1) opponents.add(pl1);
+                    if (pl2 && pl2 !== p1) opponents.add(pl2);
+                }
+            });
 
             opponents.forEach(op => {
-                if (op)
-                    p2Select.innerHTML += `<option value="${op}">${op}</option>`;
+                p2Select.innerHTML += `<option value="${op}">${op}</option>`;
             });
         }
 
@@ -188,21 +205,14 @@
             link.click();
         }
 
-        function finalizar() {
-            const rows = [...document.querySelectorAll("#resultsTableBody tr")]
-                .filter(r => r.style.display !== "none");
+        // Aplica os eventos automaticamente ao carregar a página
+        window.onload = function () {
+            document.getElementById("groupFilter").addEventListener("change", applyFilters);
+            document.getElementById("player1Filter").addEventListener("change", applyFilters);
+            document.getElementById("player2Filter").addEventListener("change", applyFilters);
+            document.getElementById("noResultsOnly").addEventListener("change", applyFilters);
 
-            const hasEmpty = rows.some(r => {
-                const inputs = r.querySelectorAll("input[type='number']");
-                return [...inputs].some(i => i.value === "" || parseInt(i.value) < 0);
-            });
-
-            if (hasEmpty) {
-                alert("Todos os jogos visíveis devem ter resultados preenchidos para finalizar.");
-                return;
-            }
-
-            document.querySelector("form").submit();
-        }
+            applyFilters(); // Aplica os filtros inicialmente
+        };
     </script>
 }
