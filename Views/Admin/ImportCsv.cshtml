@@ -93,11 +93,11 @@
                 @foreach (var player in Model.Players)
                 {
                     <tr>
-                        <td>@player.Id</td>
+                        <td>@player.UserId</td>
                         <td>@player.Name</td>
                         <td>@player.Group</td>
                         <td>
-                            <a href="@Url.Action("EditPlayer", "Admin", new { id = player.Id })" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="@Url.Action("EditPlayer", "Admin", new { id = player.UserId })" class="btn btn-sm btn-warning">Editar</a>
                         </td>
                     </tr>
                 }

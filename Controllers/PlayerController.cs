@@ -52,14 +52,14 @@ public class PlayerController : Controller
             .Include(g => g.Player1)
             .Include(g => g.Player2)
             .Where(g =>
-                (g.Player1Id == player.Id || g.Player2Id == player.Id)
+                (g.Player1Id == player.UserId || g.Player2Id == player.UserId)
                 && g.ScorePlayer1 >= 0 && g.ScorePlayer2 >= 0 // apenas jogos com resultados preenchidos
             )
             .ToListAsync();
 
         var history = games.Select(g =>
         {
-            bool isPlayer1 = g.Player1Id == player.Id;
+            bool isPlayer1 = g.Player1Id == player.UserId;
             var opponent = isPlayer1 ? g.Player2 : g.Player1;
 
             return new CompletedMatchViewModel
@@ -102,7 +102,7 @@ public class PlayerController : Controller
         var games = await _context.Games
             .Include(g => g.Player1).ThenInclude(p => p!.User)
             .Include(g => g.Player2).ThenInclude(p => p!.User)
-            .Where(g => g.Player1Id == player.Id || g.Player2Id == player.Id)
+            .Where(g => g.Player1Id == player.UserId || g.Player2Id == player.UserId)
             .ToListAsync();
 
         // Atualizando a seleção para usar o GameResultViewModel
@@ -137,7 +137,7 @@ public class PlayerController : Controller
             .Select(p => new PlayerRankingViewModel
             {
                 Name = p.Name!,
-                UserName = p.User!.UserName,
+                UserName = p.User!.UserName!,
                 Rating = p.Rating
             })
             .ToListAsync();

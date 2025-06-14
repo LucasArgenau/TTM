@@ -310,13 +310,13 @@ public class AdminController : Controller
                 foreach (var playerToLink in playersToLinkToTournament)
                 {
                     bool isAlreadyLinked;
-                    if (playerToLink.Id == 0) // New player, not yet saved to DB
+                    if (playerToLink.UserId == 0) // New player, not yet saved to DB
                     {
                         isAlreadyLinked = false;
                     }
                     else // Existing player, check if linked by Id
                     {
-                        isAlreadyLinked = currentTournamentPlayerLinks.Any(tp => tp.PlayerId == playerToLink.Id);
+                        isAlreadyLinked = currentTournamentPlayerLinks.Any(tp => tp.PlayerId == playerToLink.UserId);
                     }
 
                     if (!isAlreadyLinked)
@@ -355,8 +355,8 @@ public class AdminController : Controller
 
                 // Add players already in the tournament (via TournamentPlayers) but NOT in the current CSV batch.
                 var playerIdsFromCsvBeingProcessed = playersToLinkToTournament
-                    .Where(p => p.Id != 0) // Only consider players that have an ID
-                    .Select(p => p.Id)
+                    .Where(p => p.UserId != 0) // Only consider players that have an ID
+                    .Select(p => p.UserId)
                     .ToList();
 
                 var existingPlayersInDbForTournament = await _context.TournamentPlayers
@@ -445,8 +445,8 @@ public class AdminController : Controller
                 {
                     var game = new Game
                     {
-                        Player1Id = groupPlayers[i]!.Id,
-                        Player2Id = groupPlayers[j]!.Id,
+                        Player1Id = groupPlayers[i]!.UserId,
+                        Player2Id = groupPlayers[j]!.UserId,
                         TournamentId = tournamentId,
                         Group = group.Key,
                         Date = DateTime.Now

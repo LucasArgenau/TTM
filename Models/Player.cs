@@ -5,7 +5,6 @@ namespace TorneioTenisMesa.Models
 {
     public class Player
     {
-        public int Id { get; set; }
 
         [Required]
         public string? Name { get; set; }
@@ -17,7 +16,8 @@ namespace TorneioTenisMesa.Models
         public int StDev { get; set; }
 
         public string? Group { get; set; }
-
+        
+        [Key]
         [ForeignKey("User")]
         public int UserId { get; set; }
 
