@@ -4,25 +4,25 @@
     ViewData["Title"] = "Meu Perfil";
 }
 
-<h2>Perfil do Jogador</h2>
+<h2>Player Profile</h2>
 
 <div class="mb-4">
     <h4>@Model.Name</h4>
     <p><strong>Rating:</strong> @Model.Rating</p>
 </div>
 
-<h5>Histórico de Partidas</h5>
+<h5>Match History</h5>
 
 @if (Model.MatchHistory.Any())
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Data</th>
-                <th>Adversário</th>
-                <th>Placar</th>
-                <th>Resultado</th>
-                <th>Torneio</th>
+                <th>Date</th>
+                <th>Opponent</th>
+                <th>Score</th>
+                <th>Results</th>
+                <th>Tournament</th>
             </tr>
         </thead>
         <tbody>
@@ -35,15 +35,15 @@
                     <td>
                         @if (game.ScorePlayer > game.ScoreOpponent)
                         {
-                            <span class="text-success">Vitória</span>
+                            <span class="text-success">Win</span>
                         }
                         else if (game.ScorePlayer < game.ScoreOpponent)
                         {
-                            <span class="text-danger">Derrota</span>
+                            <span class="text-danger">Loss</span>
                         }
                         else
                         {
-                            <span class="text-secondary">Empate</span>
+                            <span class="text-secondary">Draw</span>
                         }
                     </td>
                     <td>@game.TournamentName</td>
@@ -54,5 +54,5 @@
 }
 else
 {
-    <p>Nenhuma partida finalizada encontrada.</p>
+    <p>No finalized matches found.</p>
 }

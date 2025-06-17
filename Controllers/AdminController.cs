@@ -52,7 +52,7 @@ public class AdminController : Controller
         var existingUser = await _userManager.FindByEmailAsync(model.Email);
         if (existingUser != null)
         {
-            ModelState.AddModelError(string.Empty, "Já existe um usuário com esse e-mail.");
+            ModelState.AddModelError(string.Empty, "A user with this email already exists.");
             return View(model);
         }
 
@@ -68,7 +68,7 @@ public class AdminController : Controller
         if (result.Succeeded)
         {
             await _userManager.AddToRoleAsync(user, "Admin");
-            TempData["SuccessMessage"] = "Administrador criado com sucesso!";
+            TempData["SuccessMessage"] = "Administrator created successfully!";
             return RedirectToAction("Index"); // Ajuste se quiser outra página
         }
         else
@@ -152,11 +152,11 @@ public class AdminController : Controller
         try
         {
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "Torneio e resultados atualizados com sucesso!";
+            TempData["SuccessMessage"] = "Tournament and results updated successfully!";
         }
         catch (DbUpdateException)
         {
-            ModelState.AddModelError("", "Erro ao salvar no banco de dados.");
+            ModelState.AddModelError("", "Error saving to database.");
             return View(model);
         }
 
@@ -221,7 +221,7 @@ public class AdminController : Controller
     {
         if (model.CsvFile == null || model.CsvFile.Length == 0)
         {
-            ModelState.AddModelError("", "Por favor, envie um arquivo CSV.");
+            ModelState.AddModelError("", "Please upload a CSV file.");
             return View(model);
         }
 
@@ -230,7 +230,7 @@ public class AdminController : Controller
             var tournament = await _context.Tournaments.FindAsync(model.TournamentId);
             if (tournament == null)
             {
-                ModelState.AddModelError("", "Torneio não encontrado.");
+                ModelState.AddModelError("", "Tournament not found.");
                 return View(model);
             }
 
@@ -260,7 +260,7 @@ public class AdminController : Controller
             if (!playersFromCsv.Any() && !parseResult.NewUserCredentials.Any()) // Check if there's nothing to process
             {
                 // If no players were parsed and no new users to create (even if no import errors explicitly, maybe empty file)
-                TempData["SuccessMessage"] = "Nenhum jogador processado do arquivo CSV. Nenhuma alteração feita.";
+                TempData["SuccessMessage"] = "No players processed from the CSV file. No changes made.";
                 return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
             }
 
@@ -406,19 +406,19 @@ public class AdminController : Controller
                 await _context.SaveChangesAsync(); // Single save for all changes (Users, Players, TournamentPlayers, Games)
                 await transaction.CommitAsync();
 
-                TempData["SuccessMessage"] = "Jogadores importados e confrontos criados com sucesso!";
+                TempData["SuccessMessage"] = "Players imported and matches created successfully!";
                 return RedirectToAction("ManageResults", new { tournamentId = model.TournamentId });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                ModelState.AddModelError("", $"Ocorreu um erro ao salvar os dados no banco de dados: {ex.Message}. Todas as alterações foram revertidas.");
+                ModelState.AddModelError("", $"An error occurred while saving data to the database: {ex.Message}.All changes have been reverted.");
                 return View(model);
             }
         }
         catch (Exception ex) // Catch for issues before transaction (e.g., reading CSV file itself)
         {
-            ModelState.AddModelError("", $"Erro geral ao processar o arquivo CSV: {ex.Message}");
+            ModelState.AddModelError("", $"General error processing the CSV file: {ex.Message}");
             return View(model);
         }
     }
@@ -496,13 +496,13 @@ public class AdminController : Controller
 
                 if (values.Length < 8)
                 {
-                    importErrors.Add($"Linha {lineNumber} ignorada: número insuficiente de colunas. Esperado: 8, Encontrado: {values.Length}. Conteúdo: '{line}'");
+                    importErrors.Add($"Line {lineNumber} ignored: insufficient number of columns. Expected: 8, Found: {values.Length}. Content: '{line}'");
                     continue;
                 }
 
                 if (!int.TryParse(values[1], out int ratingsCentralId))
                 {
-                    importErrors.Add($"Linha {lineNumber} ignorada: RatingsCentralId inválido '{values[1]}'. Conteúdo: '{line}'");
+                    importErrors.Add($"Line {lineNumber} ignored: RatingsCentralId invalid '{values[1]}'. Content: '{line}'");
                     continue;
                 }
 
@@ -536,7 +536,7 @@ public class AdminController : Controller
                         var addToRoleResult = await _userManager.AddToRoleAsync(user, "Player");
                         if (!addToRoleResult.Succeeded)
                         {
-                            importErrors.Add($"Linha {lineNumber}: Erro ao atribuir role 'Player' ao novo usuário {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", addToRoleResult.Errors.Select(e => e.Description))}");
+                            importErrors.Add($"Line {lineNumber}: Error assigning 'Player' role to new user {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", addToRoleResult.Errors.Select(e => e.Description))}");
                             // Optional: await _userManager.DeleteAsync(user);
                             continue; // Skip this player
                         }
@@ -544,7 +544,7 @@ public class AdminController : Controller
                     }
                     else
                     {
-                        importErrors.Add($"Linha {lineNumber}: Erro ao criar usuário {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", createUserResult.Errors.Select(e => e.Description))}");
+                        importErrors.Add($"Line {lineNumber}: Error creating user {userEmailForLookup} (RCID: {ratingsCentralId}): {string.Join(", ", createUserResult.Errors.Select(e => e.Description))}");
                         continue; // Skip this player
                     }
                 }
@@ -664,7 +664,7 @@ public class AdminController : Controller
         catch (Exception ex)
         {
             // Log error
-            TempData["ErrorMessage"] = $"Erro ao carregar resultados: {ex.Message}";
+            TempData["ErrorMessage"] = $"Error loading results: {ex.Message}";
             return RedirectToAction("Index");
         }
     }
@@ -675,7 +675,7 @@ public class AdminController : Controller
     {
         if (results == null || !results.Any())
         {
-            TempData["ErrorMessage"] = "Nenhum resultado para salvar.";
+            TempData["ErrorMessage"] = "No results to save.";
             return RedirectToAction("Index");
         }
 
@@ -690,7 +690,7 @@ public class AdminController : Controller
         }
 
         await _context.SaveChangesAsync();
-        TempData["SuccessMessage"] = "Resultados salvos com sucesso!";
+        TempData["SuccessMessage"] = "Results saved successfully!";
 
         int tournamentId = results.First().TournamentId;
 

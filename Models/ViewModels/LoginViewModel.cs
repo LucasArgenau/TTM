@@ -4,16 +4,16 @@ namespace TorneioTenisMesa.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "O nome de usuário é obrigatório.")]
-        [Display(Name = "Usuário")]
+        [Required(ErrorMessage = "The username is required.")]
+        [Display(Name = "User")]
         public string? UserName { get; set; }  // Não nullable, removido o "?"
 
-        [Required(ErrorMessage = "A senha é obrigatória.")]
+        [Required(ErrorMessage = "The password is required.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Senha")]
+        [Display(Name = "Password")]
         public string? Password { get; set; }  // Não nullable, removido o "?"
 
-        [Display(Name = "Lembrar-me")]
+        [Display(Name = "Remember-me")]
         public bool RememberMe { get; set; }
     }
 }

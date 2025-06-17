@@ -28,7 +28,7 @@ public class PlayerController : Controller
 
         if (player == null)
         {
-            return NotFound("Jogador não encontrado.");
+            return NotFound("Player not found.");
         }
 
         // Lógica para exibir informações do jogador na página inicial
@@ -45,7 +45,7 @@ public class PlayerController : Controller
             .FirstOrDefaultAsync(p => p.User!.UserName == userName);
 
         if (player == null)
-            return NotFound("Jogador não encontrado.");
+            return NotFound("Player not found.");
 
         var games = await _context.Games
             .Include(g => g.Tournament)
@@ -65,10 +65,10 @@ public class PlayerController : Controller
             return new CompletedMatchViewModel
             {
                 Date = g.Date,
-                OpponentName = opponent?.Name ?? "Desconhecido",
+                OpponentName = opponent?.Name ?? "Unknown",
                 ScorePlayer = isPlayer1 ? g.ScorePlayer1 : g.ScorePlayer2,
                 ScoreOpponent = isPlayer1 ? g.ScorePlayer2 : g.ScorePlayer1,
-                TournamentName = g.Tournament?.Name ?? "Torneio não identificado"
+                TournamentName = g.Tournament?.Name ?? "Tournament not identified"
             };
         })
         .OrderByDescending(m => m.Date)
@@ -96,7 +96,7 @@ public class PlayerController : Controller
 
         if (player == null)
         {
-            return NotFound("Jogador não encontrado.");
+            return NotFound("Player not found.");
         }
 
         var games = await _context.Games
@@ -109,8 +109,8 @@ public class PlayerController : Controller
         var results = games.Select(g => new GameResultViewModel
         {
             GameId = g.Id,
-            Player1Name = g.Player1?.Name ?? "Desconhecido",
-            Player2Name = g.Player2?.Name ?? "Desconhecido",
+            Player1Name = g.Player1?.Name ?? "Unknown",
+            Player2Name = g.Player2?.Name ?? "Unknown",
             ScorePlayer1 = g.ScorePlayer1,
             ScorePlayer2 = g.ScorePlayer2,
             Group = g.Group!,
@@ -137,12 +137,12 @@ public class PlayerController : Controller
             .Select(p => new PlayerRankingViewModel
             {
                 Name = p.Name!,
-                UserName = p.User!.UserName!,
+                UserName = p.User!.UserName,
                 Rating = p.Rating
             })
             .ToListAsync();
         
-        ViewBag.CurrentPlayerName = player?.Name ?? "Desconhecido";
+        ViewBag.CurrentPlayerName = player?.Name ?? "Unknown";
         ViewBag.CurrentUserName = userName;
         ViewBag.CurrentPlayerRating = player?.Rating ?? 0;
 
@@ -159,7 +159,7 @@ public class PlayerController : Controller
 
         if (player == null || player.TournamentPlayers == null)
         {
-            return NotFound("Jogador ou torneio não encontrado.");
+            return NotFound("Player or tournament not found.");
         }
 
         var tournament = player.TournamentPlayers;

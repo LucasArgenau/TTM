@@ -6,7 +6,7 @@ namespace TorneioTenisMesa.Models.ViewModels
 {
     public class ImportCsvViewModel
     {
-        [Required(ErrorMessage = "Por favor, selecione um arquivo CSV.")]
+        [Required(ErrorMessage = "Please select a CSV file.")]
         [DataType(DataType.Upload)]
         public required IFormFile CsvFile { get; set; }
 

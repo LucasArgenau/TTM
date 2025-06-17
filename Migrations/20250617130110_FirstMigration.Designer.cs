@@ -12,8 +12,8 @@ using TorneioTenisMesa.Models;
 namespace TorneioTenisMesa.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250610194735_mig2")]
-    partial class mig2
+    [Migration("20250617130110_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -181,7 +181,7 @@ namespace TorneioTenisMesa.Migrations
                     b.Property<int>("Player2Id")
                         .HasColumnType("int");
 
-                    b.Property<int?>("PlayerId")
+                    b.Property<int?>("PlayerUserId")
                         .HasColumnType("int");
 
                     b.Property<int>("Round")
@@ -202,7 +202,7 @@ namespace TorneioTenisMesa.Migrations
 
                     b.HasIndex("Player2Id");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("PlayerUserId");
 
                     b.HasIndex("TournamentId");
 
@@ -211,11 +211,8 @@ namespace TorneioTenisMesa.Migrations
 
             modelBuilder.Entity("TorneioTenisMesa.Models.Player", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Group")
                         .HasColumnType("nvarchar(max)");
@@ -236,12 +233,7 @@ namespace TorneioTenisMesa.Migrations
                     b.Property<int>("StDev")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
+                    b.HasKey("UserId");
 
                     b.ToTable("Players");
                 });
@@ -426,7 +418,7 @@ namespace TorneioTenisMesa.Migrations
 
                     b.HasOne("TorneioTenisMesa.Models.Player", null)
                         .WithMany("Games")
-                        .HasForeignKey("PlayerId");
+                        .HasForeignKey("PlayerUserId");
 
                     b.HasOne("TorneioTenisMesa.Models.Tournament", "Tournament")
                         .WithMany("Games")

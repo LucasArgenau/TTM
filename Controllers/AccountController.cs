@@ -42,7 +42,7 @@ public class AccountController : Controller
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("Usuário logado com sucesso.");
+                _logger.LogInformation("User logged in successfully.");
                 var user = await _userManager.FindByNameAsync(model.UserName!);
 
                 if (user != null)
@@ -58,13 +58,13 @@ public class AccountController : Controller
 
             if (result.IsLockedOut)
             {
-                _logger.LogWarning("Conta bloqueada.");
-                ModelState.AddModelError(string.Empty, "Sua conta está bloqueada.");
+                _logger.LogWarning("Account blocked.");
+                ModelState.AddModelError(string.Empty, "Your account is blocked.");
                 return View(model);
             }
 
-            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
-            ViewData["ErrorMessage"] = "Usuário ou senha inválidos.";
+            ModelState.AddModelError(string.Empty, "Invalid username or password.");
+            ViewData["ErrorMessage"] = "Invalid username or password.";
         }
 
         return View(model);
@@ -76,7 +76,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        _logger.LogInformation("Usuário deslogado.");
+        _logger.LogInformation("User logged out.");
         return RedirectToAction(nameof(HomeController.Index), "Home");
     }
 
@@ -108,7 +108,7 @@ public class AccountController : Controller
         var existingUser = await _userManager.FindByNameAsync(model.Email);
         if (existingUser != null)
         {
-            ModelState.AddModelError("", "Usuário já existe.");
+            ModelState.AddModelError("", "User already exists.");
             return View(model);
         }
 
@@ -124,7 +124,7 @@ public class AccountController : Controller
         if (result.Succeeded)
         {
             await _userManager.AddToRoleAsync(newAdmin, "Admin");
-            _logger.LogInformation("Admin registrado com sucesso.");
+            _logger.LogInformation("Admin registered successfully.");
             return RedirectToAction("Login", "Account");
         }
 

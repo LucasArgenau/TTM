@@ -1,7 +1,7 @@
 @model List<TorneioTenisMesa.Models.ViewModels.UserWithRoleViewModel>
 
 @{
-    ViewData["Title"] = "Gerenciar Usuários";
+    ViewData["Title"] = "Manage Users";
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -18,15 +18,15 @@
     </div>
 }
 
-<h2 class="text-2xl font-bold text-blue-900 mb-4">Gerenciar Usuários</h2>
+<h2 class="text-2xl font-bold text-blue-900 mb-4">Manage Users</h2>
 
 <table class="table-auto w-full bg-white shadow-md rounded-lg">
     <thead class="bg-blue-700 text-white">
         <tr>
             <th class="px-4 py-2 text-left">ID</th>
-            <th class="px-4 py-2 text-left">Nome de Usuário</th>
-            <th class="px-4 py-2 text-left">Função (Role)</th>
-            <th class="px-4 py-2 text-center">Ações</th>
+            <th class="px-4 py-2 text-left">User Name</th>
+            <th class="px-4 py-2 text-left">function (Role)</th>
+            <th class="px-4 py-2 text-center">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -37,19 +37,16 @@
                 <td class="px-4 py-2">@user.UserName</td>
                 <td class="px-4 py-2">@user.Role</td>
                 <td class="px-4 py-2 text-center">
-                    <div class="flex justify-center gap-2">
-                        <a asp-action="EditUser" asp-route-id="@user.Id"
-                           class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-all duration-200">
-                            ✏️ Editar
-                        </a>
+                    <div class="d-flex align-items-center">
+                        <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-1"
+                            title="Edit User">
+                            <i class="fas fa-pencil-alt"></i> </a>
 
-                        <form asp-action="DeleteUser" method="post"
-                              onsubmit="return confirm('Tem certeza que deseja excluir o usuário @user.UserName?');">
+                        <form asp-action="DeleteUser" method="post" class="d-inline"
+                            onsubmit="return confirm('Are you sure you want to delete the user @user.UserName?');">
                             <input type="hidden" name="id" value="@user.Id" />
-                            <button type="submit"
-                                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-all duration-200">
-                                🗑️ Excluir
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete User">
+                                <i class="fas fa-trash-alt"></i> </button>
                         </form>
                     </div>
                 </td>

@@ -6584,19 +6584,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Aluno\\.nuget\\packages\\": {}
+    "C:\\Users\\luisf\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Aluno\\Pictures\\TTM-main\\TTM-main\\TorneioTenisMesa.csproj",
+      "projectUniqueName": "C:\\Users\\luisf\\Desktop\\clone\\ttm\\TorneioTenisMesa.csproj",
       "projectName": "TorneioTenisMesa",
-      "projectPath": "C:\\Users\\Aluno\\Pictures\\TTM-main\\TTM-main\\TorneioTenisMesa.csproj",
-      "packagesPath": "C:\\Users\\Aluno\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Aluno\\Pictures\\TTM-main\\TTM-main\\obj\\",
+      "projectPath": "C:\\Users\\luisf\\Desktop\\clone\\ttm\\TorneioTenisMesa.csproj",
+      "packagesPath": "C:\\Users\\luisf\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\luisf\\Desktop\\clone\\ttm\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Aluno\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\luisf\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -6614,6 +6614,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -6682,7 +6687,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

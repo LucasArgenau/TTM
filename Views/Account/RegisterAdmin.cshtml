@@ -1,7 +1,7 @@
 @model TorneioTenisMesa.Models.ViewModels.CreateAdminViewModel
 
 @{
-    ViewData["Title"] = "Cadastro de Novo Admin";
+    ViewData["Title"] = "Register New Admin";
 }
 
 <h2 class="mb-4 text-primary">@ViewData["Title"]</h2>
@@ -11,23 +11,23 @@
 
     <div class="mb-3">
         <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" placeholder="Digite o email" />
+        <input asp-for="Email" class="form-control" placeholder="Enter email" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" type="password" class="form-control" placeholder="Digite a senha" />
+        <input asp-for="Password" type="password" class="form-control" placeholder="Enter email" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="ConfirmPassword" class="form-label"></label>
-        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirme a senha" />
+        <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" />
         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Cadastrar</button>
+    <button type="submit" class="btn btn-primary">submit</button>
 </form>
 
 @section Scripts {

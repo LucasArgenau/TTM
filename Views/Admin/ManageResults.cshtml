@@ -1,10 +1,10 @@
 @model List<TorneioTenisMesa.Models.ViewModels.GameResultViewModel>
 @{
-    ViewData["Title"] = "Gerenciar Resultados";
+    ViewData["Title"] = "Manage Results";
     var tournamentId = Model.FirstOrDefault()?.TournamentId ?? 0;
 }
 
-<h2>Gerenciar Resultados</h2>
+<h2>Manage Results</h2>
 
 @if (TempData["SuccessMessage"] != null)
 {
@@ -21,12 +21,12 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Novas Credenciais Criadas</h5>
+                    <h5 class="modal-title">New Credentials Createds</h5>
                     <button type="button" class="btn-close" onclick="closePopup()"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table">
-                        <thead><tr><th>Email</th><th>Senha</th></tr></thead>
+                        <thead><tr><th>Email</th><th>Password</th></tr></thead>
                         <tbody>
                             @foreach (var item in credentials)
                             {
@@ -36,8 +36,8 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="exportToCsv()">Exportar CSV</button>
-                    <button class="btn btn-secondary" onclick="closePopup()">Fechar</button>
+                    <button class="btn btn-primary" onclick="exportToCsv()">Export CSV</button>
+                    <button class="btn btn-secondary" onclick="closePopup()">Close</button>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
     <input type="hidden" name="tournamentId" value="@tournamentId" />
 
     <div class="mb-3">
-        <label>Grupo:</label>
+        <label>Group:</label>
         <select id="groupFilter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
             @foreach (var group in Model.Select(m => m.Group).Distinct())
@@ -59,7 +59,7 @@
     </div>
 
     <div class="mb-3">
-        <label>Jogador 1:</label>
+        <label>Player 1:</label>
         <select id="player1Filter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
             @foreach (var p1 in Model.Select(m => m.Player1Name).Distinct())
@@ -70,7 +70,7 @@
     </div>
 
     <div class="mb-3">
-        <label>Adversário:</label>
+        <label>Opponent:</label>
         <select id="player2Filter" class="form-select" onchange="applyfilters()">
             <option value="">Todos</option>
         </select>
@@ -79,7 +79,7 @@
     <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" id="noResultsOnly" onchange="applyfilters()" />
         <label class="form-check-label" for="noResultsOnly">
-            Somente jogos sem resultados
+            Only games without results
         </label>
     </div>
 
@@ -87,12 +87,12 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Grupo</th>
-                    <th>Jogador 1</th>
-                    <th>Pontos</th>
-                    <th>Jogador 2</th>
-                    <th>Pontos</th>
-                    <th>Data</th>
+                    <th>Group</th>
+                    <th>Player 1</th>
+                    <th>Points</th>
+                    <th>Player 2</th>
+                    <th>Pointos</th>
+                    <th>Date</th>
                 </tr>
             </thead>
             <tbody id="resultsTableBody">
@@ -120,10 +120,10 @@
         </table>
 
         <button type="submit" name="action" value="save" class="btn btn-success">
-            Salvar Resultados
+            Save Results 
         </button>
         <button type="submit" name="action" value="finalizar" class="btn btn-danger ms-auto">
-            Finalizar Torneio
+            Finalize Tournament
         </button>
     </div>
 </form>

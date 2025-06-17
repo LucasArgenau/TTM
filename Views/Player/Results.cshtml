@@ -1,21 +1,21 @@
 @model List<TorneioTenisMesa.Models.ViewModels.GameResultViewModel>
 
 @{
-    ViewData["Title"] = "Resultados";
+    ViewData["Title"] = "Results";
 }
 
-<h2>Resultados das Partidas</h2>
+<h2>Match Results</h2>
 
 @if (Model != null && Model.Any())
 {
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Adversário</th>
-                <th>Meu Placar</th>
-                <th>Placar Adversário</th>
-                <th>Grupo</th>
-                <th>Data</th>
+                <th>Oponnent</th>
+                <th>My Score</th>
+                <th>Opponent Score</th>
+                <th>Group</th>
+                <th>Date</th>
             </tr>
         </thead>
         <tbody>
@@ -34,5 +34,5 @@
 }
 else
 {
-    <p>Nenhuma partida registrada até o momento.</p>
+    <p>No matches registered yet.</p>
 }

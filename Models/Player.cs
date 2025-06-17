@@ -16,7 +16,7 @@ namespace TorneioTenisMesa.Models
         public int StDev { get; set; }
 
         public string? Group { get; set; }
-        
+
         [Key]
         [ForeignKey("User")]
         public int UserId { get; set; }

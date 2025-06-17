@@ -2,7 +2,7 @@
 @model TorneioTenisMesa.Models.ViewModels.ImportCsvViewModel
 
 @{
-    ViewData["Title"] = "Importar Jogadores";
+    ViewData["Title"] = "Import Players";
 }
 
 <style>
@@ -43,7 +43,7 @@
 
 <div class="form-container">
     <div class="d-flex align-items-center gap-2">
-    <h2>Importar Jogadores</h2>
+    <h2>Import Players</h2>
     <a asp-action="Index" class="btn btn-primary ms-auto">
         Back
     </a>
@@ -69,24 +69,24 @@
         <input type="hidden" asp-for="TournamentId" />
 
         <div class="form-group">
-            <label for="CsvFile">Arquivo CSV</label>
+            <label for="CsvFile">CSV Archive</label>
             <input type="file" asp-for="CsvFile" class="form-control" accept=".csv" />
             <span asp-validation-for="CsvFile" class="text-danger"></span>
         </div>
 
-        <button type="submit" class="btn btn-custom">Importar</button>
+        <button type="submit" class="btn btn-custom">Import</button>
     </form>
 
     @if (Model.Players != null && Model.Players.Any())
     {
-        <h3>Jogadores Importados</h3>
+        <h3>Imported Players</h3>
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Nome</th>
-                    <th>Grupo</th>
-                    <th>Ação</th>
+                    <th>Name</th>
+                    <th>Group</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,7 +97,7 @@
                         <td>@player.Name</td>
                         <td>@player.Group</td>
                         <td>
-                            <a href="@Url.Action("EditPlayer", "Admin", new { id = player.UserId })" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="@Url.Action("EditPlayer", "Admin", new { id = player.UserId })" class="btn btn-sm btn-warning">Edit</a>
                         </td>
                     </tr>
                 }
@@ -108,13 +108,13 @@
             <!-- Botão para gerar confrontos (já existia) -->
             <form asp-action="GenerateGames" method="post">
                 <input type="hidden" name="tournamentId" value="@Model.TournamentId" />
-                <button type="submit" class="btn btn-success">Próximo: Gerar Confrontos</button>
+                <button type="submit" class="btn btn-success">Next: Generate Matches</button>
             </form>
 
             <!-- Novo botão: adicionar resultados -->
             <form asp-action="ManageResults" method="get">
                 <input type="hidden" name="tournamentId" value="@Model.TournamentId" />
-                <button type="submit" class="btn btn-primary">Adicionar Resultados</button>
+                <button type="submit" class="btn btn-primary">Add Results</button>
             </form>
         </div>
     }
