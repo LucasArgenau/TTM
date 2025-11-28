@@ -77,7 +77,9 @@ Obs: Nomens e campos podem variar conforme sua implementação, mas representam 
 Formato recomendado do arquivo:
 
 Username,FullName,Nickname,Rating,Email
+
 jdoe,John Doe,JD,1200,jdoe@example.com
+
 maria,María Silva,Mari,1350,maria@example.com
 
 
