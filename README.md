@@ -1,4 +1,5 @@
 TTM – Sistema de Gerenciamento de Torneios de Tênis de Mesa
+
 🏓 Visão Geral
 
 O TTM é um sistema web desenvolvido em C# (.NET MVC) com Entity Framework Core e banco de dados SQL Server, projetado para gerenciar torneios de tênis de mesa.
